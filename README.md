@@ -10,8 +10,10 @@ A professional-grade AI agent orchestrator that combines OpenRouter (DeepSeek), 
 - 💾 **Redis Memory**: Persistent conversation history and goal tracking with session management
 - 📊 **Comprehensive Logging**: Detailed execution tracking and monitoring with Winston
 - 🚀 **Easy Integration**: Simple API for executing complex goals with professional output
-- 🔗 **n8n Integration**: Full n8n node package for workflow automation
-- 🎯 **Enterprise Ready**: Professional prompts and business-grade deliverables
+- 🔗 **n8n Integration**: Full n8n node package for workflow automation with JSON schema validation
+- ✅ **JSON Schema Validation**: Automatic validation of MCP tool arguments with detailed error messages
+- 🛠️ **Dynamic Tool Discovery**: Automatically discovers and validates available MCP tools
+- 🎯 **Enterprise Ready**: Professional prompts, business-grade deliverables, and robust error handling
 
 ## Architecture Overview
 
@@ -84,7 +86,7 @@ graph TB
 sequenceDiagram
     participant Client
     participant Main as Main Entry Point
-    participant Orchestrator as Simple Orchestrator
+    participant Orchestrator as Easy Agent Orchestrator
     participant Planner as Planning Agent
     participant Executor as Execution Agent
     participant OpenRouter as OpenRouter API
@@ -132,7 +134,7 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant Orchestrator as Simple Orchestrator
+    participant Orchestrator as Easy Agent Orchestrator
     participant Planner as Planning Agent
     participant Executor as Execution Agent
     participant OpenRouter as OpenRouter Client
@@ -167,7 +169,7 @@ sequenceDiagram
 ```mermaid
 graph LR
     subgraph "AI Agent Orchestrator"
-        AGENT[Simple Agent]
+        AGENT[Easy Agent]
         MCP_CLIENT[MCP Client]
     end
     
@@ -248,9 +250,9 @@ flowchart TD
 ```mermaid
 flowchart TD
     START[Start Execution]
-    PLAN[Create Plan]
-    PLAN_ERROR{Plan Creation<br/>Failed?}
-    PLAN_FALLBACK[Use Rule-based<br/>Planning]
+    PLAN[Create Plan with LLM]
+    PLAN_ERROR{LLM Planning<br/>Failed?}
+    PLAN_ERROR_DETAIL[Provide Specific<br/>Error Reason]
     
     EXECUTE[Execute Tasks]
     MCP_ERROR{MCP Tool<br/>Failed?}
@@ -264,9 +266,9 @@ flowchart TD
     
     START --> PLAN
     PLAN --> PLAN_ERROR
-    PLAN_ERROR -->|Yes| PLAN_FALLBACK
+    PLAN_ERROR -->|Yes| PLAN_ERROR_DETAIL
     PLAN_ERROR -->|No| EXECUTE
-    PLAN_FALLBACK --> EXECUTE
+    PLAN_ERROR_DETAIL --> EXECUTE
     
     EXECUTE --> MCP_ERROR
     MCP_ERROR -->|Yes| LLM_FALLBACK
@@ -346,6 +348,36 @@ chmod +x install.sh
 
 The Easy Agent Orchestrator node will be available in your n8n workflow editor.
 
+## JSON Schema Validation
+
+The Easy Agent Orchestrator includes comprehensive JSON schema validation for MCP tools:
+
+### Validation Features
+- ✅ **Type Checking**: Ensures arguments match expected types (string, number, boolean, etc.)
+- ✅ **Required Fields**: Validates that all required parameters are provided
+- ✅ **Format Validation**: Checks URLs, emails, and other formatted strings
+- ✅ **Range Validation**: Validates numeric ranges and string lengths
+- ✅ **Enum Validation**: Ensures values match allowed options
+- ✅ **Auto-sanitization**: Removes undefined values and applies defaults
+
+### Error Messages
+Instead of generic fallbacks, the system provides specific error reasons:
+```
+❌ LLM planning failed: Failed to parse LLM response as valid task plan. 
+   Response format was invalid. Please check LLM configuration and model compatibility.
+
+❌ Invalid arguments for tool 'post_web-extractor_extract': 
+   - Required field 'url' is missing or empty
+   - Field 'timeout' must be at least 1
+   - Field 'selector' must be a string
+```
+
+### n8n Integration Features
+- **Dynamic Tool Discovery**: Automatically discovers available MCP tools
+- **Schema-Aware UI**: n8n interface shows relevant fields based on selected tools
+- **Validation Integration**: Real-time validation in n8n workflow editor
+- **Professional Error Handling**: Clear, actionable error messages
+
 ## Professional Features
 
 ### Enterprise-Grade Prompts
@@ -396,9 +428,9 @@ console.log('Tasks Completed:', result.metadata.completedTasks);
 ### Advanced Usage
 
 ```javascript
-import { SimpleOrchestrator } from './src/agents/SimpleOrchestrator.js';
+import { EasyAgentOrchestrator } from './src/agents/EasyAgentOrchestrator.js';
 
-const orchestrator = new SimpleOrchestrator({
+const orchestrator = new EasyAgentOrchestrator({
   name: 'My Agent Orchestrator',
   capabilities: ['planning', 'execution', 'coordination']
 });
@@ -472,11 +504,16 @@ node test-mcp.js
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `OPENROUTER_API_KEY` | Your OpenRouter API key | Required |
-| `OPENROUTER_MODEL` | AI model to use | `deepseek/deepseek-chat-v3.1:free` |
-| `MCP_SERVER_URL` | MCP server URL | `http://localhost:3001` |
-| `PORT` | Main server port | `3000` |
-| `MCP_PORT` | MCP server port | `3001` |
+| `LLM_PROVIDER` | LLM provider (ollama/openrouter) | `ollama` |
+| `LLM_MODEL` | AI model to use | `gpt-oss-80k:latest` |
+| `LLM_BASE_URL` | LLM base URL | `https://ollama-rtx-4070.easynet.world` |
+| `OPENROUTER_API_KEY` | Your OpenRouter API key | Required for OpenRouter |
+| `OPENROUTER_MODEL` | OpenRouter model | `deepseek/deepseek-chat-v3.1:free` |
+| `OPENROUTER_BASE_URL` | OpenRouter base URL | `https://openrouter.ai/api/v1` |
+| `MCP_SERVER_URL` | MCP server URL | `http://easynet-world-7140-mcp-internaleasynetworld-service:3001` |
+| `REDIS_URL` | Redis connection URL | `redis://redis-service:6379` |
+| `REDIS_PASSWORD` | Redis password | `redis123456` |
+| `REDIS_DB` | Redis database number | `0` |
 | `LOG_LEVEL` | Logging level | `info` |
 
 ## Examples
@@ -515,16 +552,50 @@ const result = await executeGoal('Develop a comprehensive marketing strategy', {
 
 ### Project Structure
 
-- **SimpleAgent**: Core agent that handles planning and execution
-- **SimpleOrchestrator**: Coordinates multiple agents and manages workflows
+- **EasyAgent**: Core agent that handles planning and execution
+- **EasyAgentOrchestrator**: Coordinates multiple agents and manages workflows
 - **MCPClient**: Handles communication with MCP server
-- **OpenRouterClient**: Manages AI model interactions
+- **LLMClient**: Manages AI model interactions (OpenRouter/Ollama)
+- **MemoryClient**: Handles Redis memory persistence
+- **SchemaValidator**: Validates MCP tool arguments against JSON schemas
 
 ### Adding New Capabilities
 
-1. Extend `SimpleAgent` class with new methods
+1. Extend `EasyAgent` class with new methods
 2. Add new MCP tools to your server
 3. Update the orchestrator to use new capabilities
+4. Add JSON schemas for new tools in `n8n-nodes/nodes/EasyAgentOrchestrator/schemaGenerator.ts`
+
+## n8n Node Package
+
+The project includes a complete n8n node package in the `n8n-nodes/` directory:
+
+### Features
+- **Complete n8n Integration**: Full TypeScript node package for n8n workflows
+- **JSON Schema Validation**: Automatic validation of MCP tool arguments
+- **Dynamic Tool Discovery**: Lists available MCP tools with their schemas
+- **Professional UI**: Schema-aware interface with proper field validation
+- **Example Workflows**: Comprehensive workflow examples demonstrating all features
+
+### Installation
+```bash
+cd n8n-nodes
+chmod +x install.sh
+./install.sh
+```
+
+### Node Operations
+- `executeGoal` - Execute complex goals with AI planning
+- `getStatus` - Get orchestrator status and health
+- `clearSession` - Clear memory session data
+- `listTools` - Discover available MCP tools with schemas
+
+### Example Workflow
+See `n8n-nodes/examples/workflow-example.json` for a complete example that demonstrates:
+- Tool discovery and validation
+- Multiple LLM providers (OpenRouter, Ollama)
+- Memory persistence with Redis
+- Web extraction, image search, YouTube analysis, WordPress integration
 
 ## License
 
