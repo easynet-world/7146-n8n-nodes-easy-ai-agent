@@ -1,13 +1,26 @@
 import { describe, test, expect, beforeAll } from '@jest/globals';
 import { executeGoal, initializeOrchestrator } from '../src/index.js';
 
+// Skip tests if running in CI without external services
+const isCI = process.env.CI === 'true';
+const hasExternalServices = process.env.LLM_BASE_URL || process.env.OPENROUTER_API_KEY;
+
 describe('Integration Tests', () => {
   beforeAll(async () => {
+    if (isCI && !hasExternalServices) {
+      console.log('Skipping tests in CI - external services not configured');
+      return;
+    }
+    
     // Initialize the orchestrator before running tests
     await initializeOrchestrator();
   });
 
   test('should execute a complete workflow', async () => {
+    if (isCI && !hasExternalServices) {
+      console.log('Skipping test - external services not available in CI');
+      return;
+    }
     const goal = 'Create a comprehensive data analysis report';
     const context = {
       data: {
