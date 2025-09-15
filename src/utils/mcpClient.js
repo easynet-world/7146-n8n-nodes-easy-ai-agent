@@ -1,8 +1,6 @@
 import fetch from 'node-fetch';
 import { createLogger } from './logger.js';
 
-const logger = createLogger('MCPClient');
-
 export class MCPClient {
   constructor(serverUrl = 'http://localhost:3001') {
     this.serverUrl = serverUrl;

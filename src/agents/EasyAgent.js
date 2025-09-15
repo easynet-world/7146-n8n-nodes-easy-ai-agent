@@ -302,8 +302,8 @@ Deliver your plan as a structured JSON array following this exact schema:
     const results = [];
     
     for (const task of plan) {
+      const startTime = Date.now();
       try {
-        const startTime = Date.now();
         
         // Execute using preferred tool or fallback strategy
         let taskResult;
@@ -388,7 +388,7 @@ Deliver your plan as a structured JSON array following this exact schema:
     throw new Error('No suitable MCP tool found');
   }
 
-  async _selectMCPPrompt(task, availablePrompts, context) {
+  async _selectMCPPrompt(task, availablePrompts, _context) {
     if (!availablePrompts || availablePrompts.length === 0) {
       return null;
     }
@@ -434,7 +434,7 @@ Deliver your plan as a structured JSON array following this exact schema:
     return null;
   }
 
-  async _accessMCPResource(resourceName, context) {
+  async _accessMCPResource(resourceName, _context) {
     try {
       if (!this.mcp) {
         this.logger.warn('MCP client not available for resource access');
@@ -470,7 +470,7 @@ Deliver your plan as a structured JSON array following this exact schema:
     
     // Check if we should access MCP resources for additional context
     const availableResources = context.availableResources || [];
-    let resourceContext = {};
+    const resourceContext = {};
     
     if (availableResources.length > 0) {
       // Access relevant resources for additional context
