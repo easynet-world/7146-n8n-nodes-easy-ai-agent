@@ -10,7 +10,7 @@ A professional-grade AI agent orchestrator that combines OpenRouter (DeepSeek), 
 - 💾 **Redis Memory**: Persistent conversation history and goal tracking with session management
 - 📊 **Comprehensive Logging**: Detailed execution tracking and monitoring with Winston
 - 🚀 **Easy Integration**: Simple API for executing complex goals with professional output
-- 🔗 **n8n Integration**: Full n8n node package for workflow automation with JSON schema validation
+- 🔗 **n8n Integration**: Full n8n node package with real workflow integration and JSON schema validation
 - ✅ **JSON Schema Validation**: Automatic validation of MCP tool arguments with detailed error messages
 - 🛠️ **Dynamic Tool Discovery**: Automatically discovers and validates available MCP tools
 - 🎯 **Enterprise Ready**: Professional prompts, business-grade deliverables, and robust error handling
@@ -373,10 +373,12 @@ Instead of generic fallbacks, the system provides specific error reasons:
 ```
 
 ### n8n Integration Features
+- **Real Workflow Integration**: Automatically discovers and uses existing n8n LLM, Memory, and MCP nodes
 - **Dynamic Tool Discovery**: Automatically discovers available MCP tools
 - **Schema-Aware UI**: n8n interface shows relevant fields based on selected tools
 - **Validation Integration**: Real-time validation in n8n workflow editor
 - **Professional Error Handling**: Clear, actionable error messages
+- **100+ Node Types**: Supports all major n8n node types (OpenAI, Anthropic, Ollama, Redis, PostgreSQL, etc.)
 
 ## Professional Features
 

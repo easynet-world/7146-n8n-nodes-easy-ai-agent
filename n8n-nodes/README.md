@@ -7,7 +7,7 @@ This n8n community node provides integration with the Easy Agent Orchestrator, e
 - 🤖 **AI-Powered Planning**: Uses OpenRouter (DeepSeek) or Ollama for intelligent task breakdown
 - 🔧 **MCP Integration**: Connects to MCP servers for tool execution
 - 💾 **Memory Persistence**: Redis-based conversation history and goal tracking
-- 🔗 **n8n Integration**: Works with existing n8n LLM, Memory, and MCP nodes
+- 🔗 **Real n8n Integration**: Automatically discovers and uses existing n8n LLM, Memory, and MCP nodes
 - 📊 **Comprehensive Logging**: Detailed execution tracking and monitoring
 - ✅ **JSON Schema Validation**: Automatic validation of MCP tool arguments with detailed error messages
 - 🛠️ **Dynamic Tool Discovery**: Automatically discovers and validates available MCP tools
@@ -98,11 +98,11 @@ Invalid arguments for tool 'post_web-extractor_extract':
 
 ### Integration with n8n Nodes
 
-The node can integrate with existing n8n nodes:
+The node automatically discovers and integrates with existing n8n nodes:
 
-- **LLM Node**: Use n8n's LLM node instead of direct API calls
-- **Memory Node**: Use n8n's Memory node instead of direct Redis connection
-- **MCP Node**: Use n8n's MCP node instead of direct MCP server connection
+- **LLM Nodes**: Automatically finds and uses OpenAI, Anthropic, Ollama, Hugging Face, Cohere, Replicate, Together AI, OpenRouter, DeepSeek, Groq, Perplexity, Mistral, Claude, Gemini, and 50+ other LLM nodes
+- **Memory Nodes**: Automatically finds and uses Redis, PostgreSQL, MySQL, MongoDB, SQLite, Elasticsearch, Vector Store, Cache, Storage, and 20+ other memory nodes
+- **MCP Nodes**: Automatically finds and uses Tools, Functions, Actions, Operations, Services, APIs, Integrations, and 30+ other MCP/tool nodes
 
 ### Workflow Examples
 
