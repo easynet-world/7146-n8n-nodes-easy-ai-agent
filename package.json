@@ -9,7 +9,8 @@
     "dev": "node --watch src/index.js",
     "demo": "node demo-openrouter.js",
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
-    "test:watch": "NODE_OPTIONS='--experimental-vm-modules' jest --watch"
+    "test:watch": "NODE_OPTIONS='--experimental-vm-modules' jest --watch",
+    "lint": "eslint src/ --ext .js --fix"
   },
   "keywords": [
     "easy-agent",
@@ -34,9 +35,28 @@
   "devDependencies": {
     "jest": "^29.7.0",
     "@types/jest": "^29.5.8",
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.2",
+    "eslint": "^8.57.0",
+    "semantic-release": "^22.0.0",
+    "@semantic-release/commit-analyzer": "^11.1.0",
+    "@semantic-release/release-notes-generator": "^12.1.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/npm": "^11.0.2",
+    "@semantic-release/github": "^9.2.6",
+    "@semantic-release/git": "^10.0.1"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/issues"
+  },
+  "homepage": "https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent#readme",
+  "publishConfig": {
+    "access": "public"
   }
 }
