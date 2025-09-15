@@ -1,3 +1,10 @@
+## [1.0.8](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/compare/v1.0.7...v1.0.8) (2025-09-15)
+
+
+### Bug Fixes
+
+* convert ES modules to CommonJS for n8n compatibility ([8b85b63](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/commit/8b85b63046a190464b89ecdc9f5af8df819f8f03))
+
 ## [1.0.7](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/compare/v1.0.6...v1.0.7) (2025-09-15)
 
 
