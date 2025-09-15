@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-easy-ai-agent",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "n8n node for Easy AI Agent - AI-powered task planning and execution with MCP integration",
   "keywords": [
     "n8n-community-node-package",

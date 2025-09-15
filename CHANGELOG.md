@@ -1,3 +1,10 @@
+## [1.0.7](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/compare/v1.0.6...v1.0.7) (2025-09-15)
+
+
+### Bug Fixes
+
+* use dynamic require statements for module loading ([de6c878](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/commit/de6c8786e410e240d781e3ed04b1157fd958d702))
+
 ## [1.0.6](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/compare/v1.0.5...v1.0.6) (2025-09-15)
 
 
