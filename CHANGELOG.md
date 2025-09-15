@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/compare/v1.0.3...v1.0.4) (2025-09-15)
+
+
+### Bug Fixes
+
+* resolve all TypeScript compilation errors in n8n node files ([0fec76f](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/commit/0fec76f3c632760fb2b3082e0c1ca86b7a5516cb))
+
 ## [1.0.3](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/compare/v1.0.2...v1.0.3) (2025-09-15)
 
 
