@@ -106,17 +106,30 @@ The node can integrate with existing n8n nodes:
 
 ### Workflow Examples
 
-#### Data Analysis Workflow
+#### Complete Example Workflow
+- **File**: `examples/workflow-example.json`
+- **Description**: Comprehensive example demonstrating all key features
+- **Features**: 
+  - Tool discovery and listing
+  - JSON schema validation for MCP tools
+  - Multiple LLM providers (OpenRouter, Ollama)
+  - Memory persistence with Redis
+  - Web extraction, image search, YouTube analysis, WordPress integration
+  - Professional error handling and validation
+
+#### Common Workflow Patterns
+
+**Data Analysis Workflow**
 ```
 [Webhook] → [Easy Agent Orchestrator] → [Email] → [Slack]
 ```
 
-#### Content Creation Workflow
+**Content Creation Workflow**
 ```
 [Schedule Trigger] → [Easy Agent Orchestrator] → [WordPress] → [Social Media]
 ```
 
-#### Customer Support Workflow
+**Customer Support Workflow**
 ```
 [Form Trigger] → [Easy Agent Orchestrator] → [Database] → [Email Notification]
 ```

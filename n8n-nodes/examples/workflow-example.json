@@ -1,76 +1,212 @@
 {
-  "name": "Easy Agent Orchestrator Example Workflow",
+  "name": "Easy Agent Orchestrator - Complete Example",
   "nodes": [
     {
       "parameters": {
-        "httpMethod": "POST",
-        "path": "easy-agent",
-        "responseMode": "responseNode",
-        "options": {}
+        "operation": "listTools",
+        "credentials": "easyAgentOrchestratorApi"
       },
-      "id": "webhook-trigger",
-      "name": "Webhook Trigger",
-      "type": "n8n-nodes-base.webhook",
+      "id": "list-tools",
+      "name": "List Available Tools",
+      "type": "easyAgentOrchestrator",
       "typeVersion": 1,
       "position": [240, 300]
     },
     {
       "parameters": {
         "operation": "executeGoal",
-        "goal": "={{ $json.goal }}",
-        "context": "={{ $json.context || '{}' }}",
-        "sessionId": "={{ $json.sessionId || '' }}",
-        "useN8nLLM": false,
-        "useN8nMemory": false,
-        "useN8nMCP": false,
-        "additionalOptions": {
-          "maxTasks": 10,
-          "temperature": 0.7,
-          "maxTokens": 4000,
-          "timeout": 300
+        "goal": "Extract content from a website and create a WordPress blog post",
+        "context": {
+          "website_url": "https://example.com",
+          "blog_title": "Extracted Content Analysis",
+          "use_schema_validation": true
+        },
+        "useN8nLLM": true,
+        "useN8nMemory": true,
+        "useN8nMCP": true,
+        "llmProvider": "ollama",
+        "llmModel": "gpt-oss-80k:latest",
+        "llmTemperature": 0.7,
+        "llmMaxTokens": 4000,
+        "memoryProvider": "redis",
+        "sessionDuration": 24,
+        "maxHistoryItems": 100,
+        "toolName": "post_web-extractor_extract",
+        "toolDescription": "Extract content from a web page",
+        "toolArgs": {
+          "url": "https://example.com",
+          "selector": "body",
+          "timeout": 30
         }
       },
-      "id": "easy-agent-orchestrator",
-      "name": "Easy Agent Orchestrator",
-      "type": "n8n-nodes-easy-agent-orchestrator.easyAgentOrchestrator",
+      "id": "execute-goal",
+      "name": "Execute Goal with Schema Validation",
+      "type": "easyAgentOrchestrator",
       "typeVersion": 1,
-      "position": [460, 300],
-      "credentials": {
-        "easyAgentOrchestratorApi": {
-          "id": "easy-agent-credentials",
-          "name": "Easy Agent API"
-        }
-      }
+      "position": [460, 300]
     },
     {
       "parameters": {
-        "respondWith": "json",
-        "responseBody": "={{ $json }}"
+        "operation": "executeGoal",
+        "goal": "Search for images and create a visual content strategy",
+        "context": {
+          "search_query": "artificial intelligence",
+          "max_images": 10,
+          "safe_search": true
+        },
+        "useN8nLLM": true,
+        "useN8nMemory": true,
+        "useN8nMCP": true,
+        "llmProvider": "openrouter",
+        "llmModel": "deepseek/deepseek-chat-v3.1:free",
+        "llmTemperature": 0.8,
+        "llmMaxTokens": 3000,
+        "memoryProvider": "redis",
+        "sessionDuration": 48,
+        "maxHistoryItems": 50,
+        "toolName": "post_searxng_images",
+        "toolDescription": "Search for images using SearXNG",
+        "toolArgs": {
+          "query": "artificial intelligence",
+          "count": 10,
+          "safe": true
+        }
       },
-      "id": "webhook-response",
-      "name": "Webhook Response",
-      "type": "n8n-nodes-base.respondToWebhook",
+      "id": "image-search",
+      "name": "Image Search with Validation",
+      "type": "easyAgentOrchestrator",
       "typeVersion": 1,
       "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeGoal",
+        "goal": "Create a comprehensive YouTube content analysis",
+        "context": {
+          "video_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          "analysis_depth": "comprehensive",
+          "include_subtitles": true
+        },
+        "useN8nLLM": true,
+        "useN8nMemory": true,
+        "useN8nMCP": true,
+        "llmProvider": "ollama",
+        "llmModel": "gpt-oss-80k:latest",
+        "llmTemperature": 0.6,
+        "llmMaxTokens": 5000,
+        "memoryProvider": "redis",
+        "sessionDuration": 72,
+        "maxHistoryItems": 200,
+        "toolName": "post_youtube_basic-info",
+        "toolDescription": "Get basic information about a YouTube video",
+        "toolArgs": {
+          "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          "language": "en"
+        }
+      },
+      "id": "youtube-analysis",
+      "name": "YouTube Analysis with Validation",
+      "type": "easyAgentOrchestrator",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeGoal",
+        "goal": "Create and publish a WordPress blog post",
+        "context": {
+          "post_title": "AI-Powered Content Strategy",
+          "post_content": "<h1>AI-Powered Content Strategy</h1><p>This is a comprehensive analysis of AI-powered content strategies...</p>",
+          "post_status": "draft",
+          "source_key": "ai-content-strategy-2024"
+        },
+        "useN8nLLM": true,
+        "useN8nMemory": true,
+        "useN8nMCP": true,
+        "llmProvider": "openrouter",
+        "llmModel": "deepseek/deepseek-chat-v3.1:free",
+        "llmTemperature": 0.5,
+        "llmMaxTokens": 4000,
+        "memoryProvider": "redis",
+        "sessionDuration": 24,
+        "maxHistoryItems": 100,
+        "toolName": "post_wordpress_blog",
+        "toolDescription": "Create a new WordPress blog post",
+        "toolArgs": {
+          "title": "AI-Powered Content Strategy",
+          "content": "<h1>AI-Powered Content Strategy</h1><p>This is a comprehensive analysis of AI-powered content strategies...</p>",
+          "status": "draft",
+          "source_key": "ai-content-strategy-2024"
+        }
+      },
+      "id": "wordpress-post",
+      "name": "WordPress Post with Validation",
+      "type": "easyAgentOrchestrator",
+      "typeVersion": 1,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getStatus",
+        "credentials": "easyAgentOrchestratorApi"
+      },
+      "id": "get-status",
+      "name": "Get Orchestrator Status",
+      "type": "easyAgentOrchestrator",
+      "typeVersion": 1,
+      "position": [1340, 300]
     }
   ],
   "connections": {
-    "Webhook Trigger": {
+    "List Available Tools": {
       "main": [
         [
           {
-            "node": "Easy Agent Orchestrator",
+            "node": "Execute Goal with Schema Validation",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Easy Agent Orchestrator": {
+    "Execute Goal with Schema Validation": {
       "main": [
         [
           {
-            "node": "Webhook Response",
+            "node": "Image Search with Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Search with Validation": {
+      "main": [
+        [
+          {
+            "node": "YouTube Analysis with Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube Analysis with Validation": {
+      "main": [
+        [
+          {
+            "node": "WordPress Post with Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WordPress Post with Validation": {
+      "main": [
+        [
+          {
+            "node": "Get Orchestrator Status",
             "type": "main",
             "index": 0
           }
@@ -78,11 +214,20 @@
       ]
     }
   },
-  "active": false,
-  "settings": {},
-  "versionId": "1",
-  "id": "easy-agent-workflow",
-  "meta": {
-    "templateCredsSetupCompleted": true
-  }
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "id": "easy-agent-orchestrator",
+      "name": "Easy Agent Orchestrator"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "versionId": "1"
 }
