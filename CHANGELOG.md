@@ -1,3 +1,15 @@
+## [1.0.1](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/compare/v1.0.0...v1.0.1) (2025-09-15)
+
+
+### Bug Fixes
+
+* add missing @typescript-eslint/eslint-plugin dependency ([3fe655f](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/commit/3fe655f45b527d478a71a56d854cefbcd3098fe8))
+* configure ESLint for TypeScript files ([c3b5176](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/commit/c3b51767a2a51e3a82504348c21832c1f43d9295))
+* restructure package for n8n node compatibility ([d82e413](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/commit/d82e413b0195963118ff84e742249649c197dcd9))
+* simplify ESLint configuration to avoid config resolution issues ([2b5fb9e](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/commit/2b5fb9ed7e52e4fd67115e6ac61266b9390e20c8))
+* update lint script to properly handle TypeScript files ([3a06aad](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/commit/3a06aad71b8099fbf1e20c40c6c26fcebce3c8c2))
+* update package-lock.json with TypeScript ESLint dependencies ([3c6745c](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/commit/3c6745c537f1da9868b01d1c1a7b6362d29e4cbc))
+
 # 1.0.0 (2025-09-15)
 
 
