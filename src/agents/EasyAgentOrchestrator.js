@@ -35,15 +35,18 @@ export class EasyAgentOrchestrator {
       // Phase 1: Discovery & Planning
       this.logger.info('Phase 1: Discovery & Planning');
       
-      // First, discover available MCP tools
+      // Discover all available MCP capabilities (tools, prompts, resources)
       const planner = this.agents.get('planner');
-      const availableTools = await planner.discoverTools();
-      this.logger.info(`Discovered ${availableTools.length} available MCP tools`);
+      const mcpCapabilities = await planner.discoverAllMCPCapabilities();
+      this.logger.info(`Discovered MCP capabilities: ${mcpCapabilities.summary.toolsCount} tools, ${mcpCapabilities.summary.promptsCount} prompts, ${mcpCapabilities.summary.resourcesCount} resources`);
       
-      // Create plan with tool context
+      // Create plan with comprehensive MCP context
       const planResult = await planner.execute(goal, {
         ...context,
-        availableTools: availableTools
+        availableTools: mcpCapabilities.tools,
+        availablePrompts: mcpCapabilities.prompts,
+        availableResources: mcpCapabilities.resources,
+        mcpCapabilities: mcpCapabilities
       });
       
       if (!planResult.success) {

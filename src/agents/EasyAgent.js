@@ -64,6 +64,80 @@ export class EasyAgent {
     }
   }
 
+  async discoverPrompts() {
+    this.logger.info('Discovering available MCP prompts');
+    
+    try {
+      if (this.mcp) {
+        const promptsResult = await this.mcp.getPrompts();
+        if (promptsResult && promptsResult.prompts) {
+          this.logger.info(`Found ${promptsResult.prompts.length} MCP prompts`);
+          return promptsResult.prompts;
+        }
+      }
+      
+      this.logger.warn('No MCP prompts available');
+      return [];
+    } catch (error) {
+      this.logger.error(`Failed to discover MCP prompts: ${error.message}`);
+      return [];
+    }
+  }
+
+  async discoverResources() {
+    this.logger.info('Discovering available MCP resources');
+    
+    try {
+      if (this.mcp) {
+        const resourcesResult = await this.mcp.getResources();
+        if (resourcesResult && resourcesResult.resources) {
+          this.logger.info(`Found ${resourcesResult.resources.length} MCP resources`);
+          return resourcesResult.resources;
+        }
+      }
+      
+      this.logger.warn('No MCP resources available');
+      return [];
+    } catch (error) {
+      this.logger.error(`Failed to discover MCP resources: ${error.message}`);
+      return [];
+    }
+  }
+
+  async discoverAllMCPCapabilities() {
+    this.logger.info('Discovering all MCP capabilities');
+    
+    try {
+      const [tools, prompts, resources] = await Promise.all([
+        this.discoverTools(),
+        this.discoverPrompts(),
+        this.discoverResources()
+      ]);
+
+      const capabilities = {
+        tools,
+        prompts,
+        resources,
+        summary: {
+          toolsCount: tools.length,
+          promptsCount: prompts.length,
+          resourcesCount: resources.length
+        }
+      };
+
+      this.logger.info(`Discovered MCP capabilities: ${capabilities.summary.toolsCount} tools, ${capabilities.summary.promptsCount} prompts, ${capabilities.summary.resourcesCount} resources`);
+      return capabilities;
+    } catch (error) {
+      this.logger.error(`Failed to discover MCP capabilities: ${error.message}`);
+      return {
+        tools: [],
+        prompts: [],
+        resources: [],
+        summary: { toolsCount: 0, promptsCount: 0, resourcesCount: 0 }
+      };
+    }
+  }
+
   async execute(goal, context = {}) {
     this.logger.info(`Executing goal: ${goal}`);
     
@@ -145,9 +219,20 @@ export class EasyAgent {
 
   async _createPlanWithLLM(goal, context) {
     const availableTools = context.availableTools || [];
+    const availablePrompts = context.availablePrompts || [];
+    const availableResources = context.availableResources || [];
+    
     const toolsInfo = availableTools.length > 0 
       ? `\n\nAvailable MCP Tools:\n${availableTools.map(tool => `- ${tool.name}: ${tool.description}`).join('\n')}`
       : '\n\nNo MCP tools available - use simulation or LLM-based execution.';
+
+    const promptsInfo = availablePrompts.length > 0
+      ? `\n\nAvailable MCP Prompts:\n${availablePrompts.map(prompt => `- ${prompt.name}: ${prompt.description || 'No description'}`).join('\n')}`
+      : '\n\nNo MCP prompts available - using default planning prompts.';
+
+    const resourcesInfo = availableResources.length > 0
+      ? `\n\nAvailable MCP Resources:\n${availableResources.map(resource => `- ${resource.name}: ${resource.description || 'No description'}`).join('\n')}`
+      : '\n\nNo MCP resources available - using context data only.';
 
     const systemPrompt = `You are a senior strategic planning consultant with expertise in project management and business process optimization. Your role is to decompose complex business objectives into structured, executable task sequences.
 
@@ -172,10 +257,10 @@ Deliver your plan as a structured JSON array following this exact schema:
 
     const userMessage = `**Business Objective**: ${goal}
 
-**Project Context**:
-${JSON.stringify(context, null, 2)}${toolsInfo}
+    **Project Context**:
+    ${JSON.stringify(context, null, 2)}${toolsInfo}${promptsInfo}${resourcesInfo}
 
-**Deliverable Required**: Develop a comprehensive execution roadmap that systematically addresses the stated objective, incorporating available tools and resources to ensure optimal outcomes.`;
+    **Deliverable Required**: Develop a comprehensive execution roadmap that systematically addresses the stated objective, incorporating available tools, prompts, and resources to ensure optimal outcomes.`;
 
     const response = await this.llm.generateResponse(systemPrompt, userMessage, {
       temperature: 0.3,
@@ -303,29 +388,142 @@ ${JSON.stringify(context, null, 2)}${toolsInfo}
     throw new Error('No suitable MCP tool found');
   }
 
+  async _selectMCPPrompt(task, availablePrompts, context) {
+    if (!availablePrompts || availablePrompts.length === 0) {
+      return null;
+    }
+
+    // Simple keyword-based prompt selection
+    const taskDescription = task.description.toLowerCase();
+    const taskKeywords = taskDescription.split(/\s+/);
+    
+    // Find prompts that match task keywords
+    const matchingPrompts = availablePrompts.filter(prompt => {
+      const promptName = (prompt.name || '').toLowerCase();
+      const promptDescription = (prompt.description || '').toLowerCase();
+      const promptText = `${promptName} ${promptDescription}`;
+      
+      return taskKeywords.some(keyword => 
+        keyword.length > 3 && promptText.includes(keyword)
+      );
+    });
+
+    if (matchingPrompts.length > 0) {
+      // Return the first matching prompt
+      const selectedPrompt = matchingPrompts[0];
+      this.logger.info(`Selected MCP prompt: ${selectedPrompt.name} for task: ${task.description}`);
+      return selectedPrompt;
+    }
+
+    // If no specific match, look for general-purpose prompts
+    const generalPrompts = availablePrompts.filter(prompt => {
+      const promptName = (prompt.name || '').toLowerCase();
+      return promptName.includes('general') || 
+             promptName.includes('default') || 
+             promptName.includes('analysis') ||
+             promptName.includes('execution');
+    });
+
+    if (generalPrompts.length > 0) {
+      const selectedPrompt = generalPrompts[0];
+      this.logger.info(`Selected general MCP prompt: ${selectedPrompt.name} for task: ${task.description}`);
+      return selectedPrompt;
+    }
+
+    this.logger.info(`No suitable MCP prompt found for task: ${task.description}`);
+    return null;
+  }
+
+  async _accessMCPResource(resourceName, context) {
+    try {
+      if (!this.mcp) {
+        this.logger.warn('MCP client not available for resource access');
+        return null;
+      }
+
+      // Call MCP resource endpoint
+      const response = await fetch(`${this.mcp.serverUrl}/resources/${resourceName}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        this.logger.warn(`Failed to access MCP resource ${resourceName}: ${response.status}`);
+        return null;
+      }
+
+      const resourceData = await response.json();
+      this.logger.info(`Successfully accessed MCP resource: ${resourceName}`);
+      return resourceData;
+    } catch (error) {
+      this.logger.error(`Failed to access MCP resource ${resourceName}: ${error.message}`);
+      return null;
+    }
+  }
+
   async _executeTaskWithLLM(task, context) {
-    const systemPrompt = `You are a senior business analyst and execution specialist with extensive experience in delivering high-impact business solutions. Your expertise spans multiple domains including data analysis, process optimization, strategic planning, and technology implementation.
+    // Check if we should use an MCP prompt for this task
+    const availablePrompts = context.availablePrompts || [];
+    const selectedPrompt = await this._selectMCPPrompt(task, availablePrompts, context);
+    
+    // Check if we should access MCP resources for additional context
+    const availableResources = context.availableResources || [];
+    let resourceContext = {};
+    
+    if (availableResources.length > 0) {
+      // Access relevant resources for additional context
+      for (const resource of availableResources.slice(0, 3)) { // Limit to 3 resources
+        const resourceData = await this._accessMCPResource(resource.name, context);
+        if (resourceData) {
+          resourceContext[resource.name] = resourceData;
+        }
+      }
+    }
+    
+    let systemPrompt, userMessage;
+    
+    if (selectedPrompt) {
+      // Use MCP prompt
+      systemPrompt = selectedPrompt.prompt || selectedPrompt.description;
+      userMessage = `**Task Assignment**: ${task.description}
 
-Your execution approach should demonstrate:
-1. **Methodical Analysis**: Systematic evaluation of task requirements and constraints
-2. **Professional Deliverables**: Comprehensive, well-structured outputs that meet business standards
-3. **Strategic Insights**: Actionable recommendations based on thorough analysis
-4. **Quality Assurance**: Rigorous validation of results and identification of potential improvements
-5. **Stakeholder Communication**: Clear, concise reporting suitable for executive and operational audiences
+      **Execution Context**:
+      ${JSON.stringify(context, null, 2)}
 
-Provide detailed execution results that include:
-- **Executive Summary**: High-level overview of accomplishments and key outcomes
-- **Detailed Analysis**: Comprehensive findings with supporting evidence and methodology
-- **Strategic Recommendations**: Actionable next steps with clear rationale and expected impact
-- **Risk Assessment**: Identification of potential challenges and mitigation strategies
-- **Success Metrics**: Quantifiable measures of task completion and value delivered`;
+      **MCP Prompt Context**: Using specialized prompt: ${selectedPrompt.name}
 
-    const userMessage = `**Task Assignment**: ${task.description}
+      **MCP Resource Context**:
+      ${Object.keys(resourceContext).length > 0 ? JSON.stringify(resourceContext, null, 2) : 'No MCP resources accessed'}`;
+    } else {
+      // Use default professional prompt
+      systemPrompt = `You are a senior business analyst and execution specialist with extensive experience in delivering high-impact business solutions. Your expertise spans multiple domains including data analysis, process optimization, strategic planning, and technology implementation.
 
-**Execution Context**:
-${JSON.stringify(context, null, 2)}
+      Your execution approach should demonstrate:
+      1. **Methodical Analysis**: Systematic evaluation of task requirements and constraints
+      2. **Professional Deliverables**: Comprehensive, well-structured outputs that meet business standards
+      3. **Strategic Insights**: Actionable recommendations based on thorough analysis
+      4. **Quality Assurance**: Rigorous validation of results and identification of potential improvements
+      5. **Stakeholder Communication**: Clear, concise reporting suitable for executive and operational audiences
 
-**Required Deliverable**: Execute the assigned task with professional rigor and provide a comprehensive analysis report that demonstrates thorough execution and strategic value.`;
+      Provide detailed execution results that include:
+      - **Executive Summary**: High-level overview of accomplishments and key outcomes
+      - **Detailed Analysis**: Comprehensive findings with supporting evidence and methodology
+      - **Strategic Recommendations**: Actionable next steps with clear rationale and expected impact
+      - **Risk Assessment**: Identification of potential challenges and mitigation strategies
+      - **Success Metrics**: Quantifiable measures of task completion and value delivered`;
+
+      userMessage = `**Task Assignment**: ${task.description}
+
+      **Execution Context**:
+      ${JSON.stringify(context, null, 2)}
+
+      **MCP Resource Context**:
+      ${Object.keys(resourceContext).length > 0 ? JSON.stringify(resourceContext, null, 2) : 'No MCP resources accessed'}
+
+      **Required Deliverable**: Execute the assigned task with professional rigor and provide a comprehensive analysis report that demonstrates thorough execution and strategic value.`;
+    }
 
     const response = await this.llm.generateResponse(systemPrompt, userMessage, {
       temperature: 0.3,

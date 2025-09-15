@@ -9,6 +9,7 @@ import {
 import { EasyAgentOrchestrator } from '../../../src/agents/EasyAgentOrchestrator.js';
 import { createLogger } from '../../../src/utils/logger.js';
 import { N8nSchemaGenerator } from './schemaGenerator.js';
+import { N8nIntegrationCoordinator } from './n8nIntegration.js';
 
 export class EasyAgentOrchestratorNode implements INodeType {
 	description: INodeTypeDescription = {
@@ -56,10 +57,10 @@ export class EasyAgentOrchestratorNode implements INodeType {
 						action: 'Clear session',
 					},
 					{
-						name: 'List Available Tools',
+						name: 'List MCP Capabilities',
 						value: 'listTools',
-						description: 'List all available MCP tools with their schemas',
-						action: 'List tools',
+						description: 'List all available MCP tools, prompts, and resources with their schemas',
+						action: 'List capabilities',
 					},
 				],
 				default: 'executeGoal',
@@ -219,10 +220,19 @@ export class EasyAgentOrchestratorNode implements INodeType {
 				process.env.REDIS_PASSWORD = credentials.redisPassword as string;
 				process.env.REDIS_DB = credentials.redisDb as string;
 
+				// Initialize n8n integration coordinator
+				const n8nIntegration = new N8nIntegrationCoordinator(this);
+				await n8nIntegration.initialize();
+
+				// Check available n8n nodes
+				const availableNodes = await n8nIntegration.getAvailableNodes();
+				logger.info(`Found ${availableNodes.llmNodes.length} LLM nodes, ${availableNodes.memoryNodes.length} Memory nodes, ${availableNodes.mcpNodes.length} MCP nodes`);
+
 				// Initialize orchestrator
 				const orchestrator = new EasyAgentOrchestrator({
 					name: 'n8n-EasyAgentOrchestrator',
-					capabilities: ['planning', 'execution', 'coordination', 'validation']
+					capabilities: ['planning', 'execution', 'coordination', 'validation'],
+					n8nIntegration: n8nIntegration
 				});
 
 				let result: any = {};
@@ -291,15 +301,17 @@ export class EasyAgentOrchestratorNode implements INodeType {
 					}
 
 					case 'listTools': {
-						// Get the planner agent to access MCP tools
+						// Get the planner agent to access MCP capabilities
 						const planner = (orchestrator as any).agents.get('planner');
 						if (planner && planner.mcp) {
-							const toolsResult = await planner.mcp.listTools();
+							const capabilities = await planner.discoverAllMCPCapabilities();
 							result = {
 								success: true,
-								tools: toolsResult.tools || [],
+								tools: capabilities.tools || [],
+								prompts: capabilities.prompts || [],
+								resources: capabilities.resources || [],
 								schemas: N8nSchemaGenerator.generateCommonMCPToolSchemas(),
-								count: toolsResult.tools?.length || 0
+								summary: capabilities.summary
 							};
 						} else {
 							result = { 

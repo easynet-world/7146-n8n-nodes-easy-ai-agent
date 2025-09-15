@@ -4,12 +4,22 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { N8nSchemaValidator } from './schemaValidator.js';
+import { N8nWorkflowAnalyzer } from './workflowAnalyzer.js';
 
 /**
  * Integration helper for n8n LLM nodes
  */
 export class N8nLLMIntegration {
-	constructor(private executeFunctions: IExecuteFunctions) {}
+	private workflowAnalyzer: N8nWorkflowAnalyzer;
+	private availableLLMNodes: Array<{ nodeId: string; nodeType: string; nodeName: string }> = [];
+
+	constructor(private executeFunctions: IExecuteFunctions) {
+		this.workflowAnalyzer = new N8nWorkflowAnalyzer(executeFunctions);
+	}
+
+	async initialize() {
+		this.availableLLMNodes = await this.workflowAnalyzer.findLLMNodes();
+	}
 
 	async generateResponse(systemPrompt: string, userMessage: string, options: any = {}) {
 		try {
@@ -28,27 +38,48 @@ export class N8nLLMIntegration {
 				},
 			}];
 
-			// Execute the LLM node
-			const result = await this.executeFunctions.executeWorkflow(
-				llmNode.workflowId,
-				llmNode.nodeId,
-				inputData
-			);
+			// Execute the LLM node using n8n's execution system
+			const result = await this.executeLLMNode(llmNode, inputData);
 
 			return {
-				content: result[0]?.json?.response || result[0]?.json?.content || '',
+				content: result[0]?.json?.response || result[0]?.json?.content || result[0]?.json?.text || '',
 				usage: result[0]?.json?.usage || {},
-				model: result[0]?.json?.model || 'unknown',
+				model: result[0]?.json?.model || result[0]?.json?.modelName || 'unknown',
 			};
 		} catch (error) {
-			throw new NodeOperationError(this.executeFunctions.getNode(), `LLM integration failed: ${error.message}`);
+			throw new NodeOperationError(this.executeFunctions.getNode(), `LLM integration failed: ${error instanceof Error ? error.message : String(error)}`);
 		}
 	}
 
 	private async findLLMNode() {
-		// This would need to be implemented based on your n8n setup
-		// For now, return null to use direct API calls
-		return null;
+		if (this.availableLLMNodes.length === 0) {
+			await this.initialize();
+		}
+		
+		// Return the first available LLM node
+		return this.availableLLMNodes[0] || null;
+	}
+
+	private async executeLLMNode(llmNode: { nodeId: string; nodeType: string; nodeName: string }, inputData: INodeExecutionData[]) {
+		try {
+			// Use n8n's built-in execution system
+			const result = await this.executeFunctions.executeWorkflow(
+				llmNode.nodeId,
+				inputData
+			);
+			return result;
+		} catch (error) {
+			// Fallback: try to execute the node directly
+			try {
+				const result = await this.executeFunctions.executeNode(
+					llmNode.nodeId,
+					inputData
+				);
+				return result;
+			} catch (fallbackError) {
+				throw new Error(`Failed to execute LLM node ${llmNode.nodeName}: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`);
+			}
+		}
 	}
 }
 
@@ -56,7 +87,16 @@ export class N8nLLMIntegration {
  * Integration helper for n8n Memory nodes
  */
 export class N8nMemoryIntegration {
-	constructor(private executeFunctions: IExecuteFunctions) {}
+	private workflowAnalyzer: N8nWorkflowAnalyzer;
+	private availableMemoryNodes: Array<{ nodeId: string; nodeType: string; nodeName: string }> = [];
+
+	constructor(private executeFunctions: IExecuteFunctions) {
+		this.workflowAnalyzer = new N8nWorkflowAnalyzer(executeFunctions);
+	}
+
+	async initialize() {
+		this.availableMemoryNodes = await this.workflowAnalyzer.findMemoryNodes();
+	}
 
 	async storeConversation(sessionId: string, conversation: any[]) {
 		try {
@@ -73,15 +113,10 @@ export class N8nMemoryIntegration {
 				},
 			}];
 
-			await this.executeFunctions.executeWorkflow(
-				memoryNode.workflowId,
-				memoryNode.nodeId,
-				inputData
-			);
-
+			await this.executeMemoryNode(memoryNode, inputData);
 			return true;
 		} catch (error) {
-			throw new NodeOperationError(this.executeFunctions.getNode(), `Memory integration failed: ${error.message}`);
+			throw new NodeOperationError(this.executeFunctions.getNode(), `Memory integration failed: ${error instanceof Error ? error.message : String(error)}`);
 		}
 	}
 
@@ -99,15 +134,10 @@ export class N8nMemoryIntegration {
 				},
 			}];
 
-			const result = await this.executeFunctions.executeWorkflow(
-				memoryNode.workflowId,
-				memoryNode.nodeId,
-				inputData
-			);
-
-			return result[0]?.json?.value || null;
+			const result = await this.executeMemoryNode(memoryNode, inputData);
+			return result[0]?.json?.value || result[0]?.json?.data || null;
 		} catch (error) {
-			throw new NodeOperationError(this.executeFunctions.getNode(), `Memory integration failed: ${error.message}`);
+			throw new NodeOperationError(this.executeFunctions.getNode(), `Memory integration failed: ${error instanceof Error ? error.message : String(error)}`);
 		}
 	}
 
@@ -125,22 +155,42 @@ export class N8nMemoryIntegration {
 				},
 			}];
 
-			await this.executeFunctions.executeWorkflow(
-				memoryNode.workflowId,
-				memoryNode.nodeId,
-				inputData
-			);
-
+			await this.executeMemoryNode(memoryNode, inputData);
 			return true;
 		} catch (error) {
-			throw new NodeOperationError(this.executeFunctions.getNode(), `Memory integration failed: ${error.message}`);
+			throw new NodeOperationError(this.executeFunctions.getNode(), `Memory integration failed: ${error instanceof Error ? error.message : String(error)}`);
 		}
 	}
 
 	private async findMemoryNode() {
-		// This would need to be implemented based on your n8n setup
-		// For now, return null to use direct Redis connection
-		return null;
+		if (this.availableMemoryNodes.length === 0) {
+			await this.initialize();
+		}
+		
+		// Return the first available Memory node
+		return this.availableMemoryNodes[0] || null;
+	}
+
+	private async executeMemoryNode(memoryNode: { nodeId: string; nodeType: string; nodeName: string }, inputData: INodeExecutionData[]) {
+		try {
+			// Use n8n's built-in execution system
+			const result = await this.executeFunctions.executeWorkflow(
+				memoryNode.nodeId,
+				inputData
+			);
+			return result;
+		} catch (error) {
+			// Fallback: try to execute the node directly
+			try {
+				const result = await this.executeFunctions.executeNode(
+					memoryNode.nodeId,
+					inputData
+				);
+				return result;
+			} catch (fallbackError) {
+				throw new Error(`Failed to execute Memory node ${memoryNode.nodeName}: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`);
+			}
+		}
 	}
 }
 
@@ -148,7 +198,16 @@ export class N8nMemoryIntegration {
  * Integration helper for n8n MCP nodes
  */
 export class N8nMCPIntegration {
-	constructor(private executeFunctions: IExecuteFunctions) {}
+	private workflowAnalyzer: N8nWorkflowAnalyzer;
+	private availableMCPNodes: Array<{ nodeId: string; nodeType: string; nodeName: string }> = [];
+
+	constructor(private executeFunctions: IExecuteFunctions) {
+		this.workflowAnalyzer = new N8nWorkflowAnalyzer(executeFunctions);
+	}
+
+	async initialize() {
+		this.availableMCPNodes = await this.workflowAnalyzer.findMCPNodes();
+	}
 
 	async listTools() {
 		try {
@@ -163,15 +222,10 @@ export class N8nMCPIntegration {
 				},
 			}];
 
-			const result = await this.executeFunctions.executeWorkflow(
-				mcpNode.workflowId,
-				mcpNode.nodeId,
-				inputData
-			);
-
+			const result = await this.executeMCPNode(mcpNode, inputData);
 			return result[0]?.json || { tools: [] };
 		} catch (error) {
-			throw new NodeOperationError(this.executeFunctions.getNode(), `MCP integration failed: ${error.message}`);
+			throw new NodeOperationError(this.executeFunctions.getNode(), `MCP integration failed: ${error instanceof Error ? error.message : String(error)}`);
 		}
 	}
 
@@ -207,22 +261,42 @@ export class N8nMCPIntegration {
 				},
 			}];
 
-			const result = await this.executeFunctions.executeWorkflow(
-				mcpNode.workflowId,
-				mcpNode.nodeId,
-				inputData
-			);
-
+			const result = await this.executeMCPNode(mcpNode, inputData);
 			return result[0]?.json?.result || result[0]?.json;
 		} catch (error) {
-			throw new NodeOperationError(this.executeFunctions.getNode(), `MCP integration failed: ${error.message}`);
+			throw new NodeOperationError(this.executeFunctions.getNode(), `MCP integration failed: ${error instanceof Error ? error.message : String(error)}`);
 		}
 	}
 
 	private async findMCPNode() {
-		// This would need to be implemented based on your n8n setup
-		// For now, return null to use direct MCP server connection
-		return null;
+		if (this.availableMCPNodes.length === 0) {
+			await this.initialize();
+		}
+		
+		// Return the first available MCP node
+		return this.availableMCPNodes[0] || null;
+	}
+
+	private async executeMCPNode(mcpNode: { nodeId: string; nodeType: string; nodeName: string }, inputData: INodeExecutionData[]) {
+		try {
+			// Use n8n's built-in execution system
+			const result = await this.executeFunctions.executeWorkflow(
+				mcpNode.nodeId,
+				inputData
+			);
+			return result;
+		} catch (error) {
+			// Fallback: try to execute the node directly
+			try {
+				const result = await this.executeFunctions.executeNode(
+					mcpNode.nodeId,
+					inputData
+				);
+				return result;
+			} catch (fallbackError) {
+				throw new Error(`Failed to execute MCP node ${mcpNode.nodeName}: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`);
+			}
+		}
 	}
 }
 
@@ -233,17 +307,39 @@ export class N8nIntegrationCoordinator {
 	public llm: N8nLLMIntegration;
 	public memory: N8nMemoryIntegration;
 	public mcp: N8nMCPIntegration;
+	private workflowAnalyzer: N8nWorkflowAnalyzer;
+	private initialized = false;
 
 	constructor(executeFunctions: IExecuteFunctions) {
 		this.llm = new N8nLLMIntegration(executeFunctions);
 		this.memory = new N8nMemoryIntegration(executeFunctions);
 		this.mcp = new N8nMCPIntegration(executeFunctions);
+		this.workflowAnalyzer = new N8nWorkflowAnalyzer(executeFunctions);
+	}
+
+	async initialize() {
+		if (this.initialized) return;
+		
+		// Initialize all integration components
+		await Promise.all([
+			this.llm.initialize(),
+			this.memory.initialize(),
+			this.mcp.initialize()
+		]);
+		
+		this.initialized = true;
+	}
+
+	async getAvailableNodes() {
+		await this.initialize();
+		return await this.workflowAnalyzer.getAllCompatibleNodes();
 	}
 
 	async isLLMAvailable(): Promise<boolean> {
 		try {
-			await this.llm.generateResponse('test', 'test');
-			return true;
+			await this.initialize();
+			const nodes = await this.workflowAnalyzer.findLLMNodes();
+			return nodes.length > 0;
 		} catch {
 			return false;
 		}
@@ -251,8 +347,9 @@ export class N8nIntegrationCoordinator {
 
 	async isMemoryAvailable(): Promise<boolean> {
 		try {
-			await this.memory.getConversation('test');
-			return true;
+			await this.initialize();
+			const nodes = await this.workflowAnalyzer.findMemoryNodes();
+			return nodes.length > 0;
 		} catch {
 			return false;
 		}
@@ -260,8 +357,9 @@ export class N8nIntegrationCoordinator {
 
 	async isMCPAvailable(): Promise<boolean> {
 		try {
-			await this.mcp.listTools();
-			return true;
+			await this.initialize();
+			const nodes = await this.workflowAnalyzer.findMCPNodes();
+			return nodes.length > 0;
 		} catch {
 			return false;
 		}
