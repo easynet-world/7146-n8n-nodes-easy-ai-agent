@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/compare/v1.0.2...v1.0.3) (2025-09-15)
+
+
+### Bug Fixes
+
+* remove deprecated TypeScript option suppressImplicitAnyIndexErrors ([0ea19b9](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/commit/0ea19b93f4a71e2cea7525f878b7f7e0daa07398))
+
 ## [1.0.2](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/compare/v1.0.1...v1.0.2) (2025-09-15)
 
 
