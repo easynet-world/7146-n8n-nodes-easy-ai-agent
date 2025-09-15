@@ -21,7 +21,6 @@
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "noEmitOnError": false,
-    "suppressImplicitAnyIndexErrors": true,
     "typeRoots": [
       "./node_modules/@types"
     ],
