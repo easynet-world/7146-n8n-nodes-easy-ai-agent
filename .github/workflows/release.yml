@@ -30,12 +30,6 @@ jobs:
       - name: Run linting
         run: npm run lint
 
-      - name: Run tests (optional)
-        run: npm test || echo "Tests skipped - external services not available in CI"
-        continue-on-error: true
-        env:
-          CI: true
-
       - name: Setup npm authentication
         run: |
           # Create .npmrc with proper authentication
