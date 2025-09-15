@@ -1,6 +1,6 @@
-# n8n Easy Agent Orchestrator Node
+# n8n Easy AI Agent Node
 
-This n8n community node provides integration with the Easy Agent Orchestrator, enabling AI-powered task planning and execution within n8n workflows.
+This n8n community node provides integration with the Easy AI Agent, enabling AI-powered task planning and execution within n8n workflows.
 
 ## Features
 

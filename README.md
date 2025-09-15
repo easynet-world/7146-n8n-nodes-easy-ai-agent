@@ -1,6 +1,6 @@
-# Easy Agent Orchestrator
+# n8n-nodes-easy-ai-agent
 
-A professional-grade AI agent orchestrator that combines OpenRouter (DeepSeek), Ollama, and MCP (Model Context Protocol) for enterprise-level task planning and execution with Redis memory integration and n8n workflow automation.
+A professional-grade n8n node package for Easy AI Agent that combines OpenRouter (DeepSeek), Ollama, and MCP (Model Context Protocol) for enterprise-level task planning and execution with Redis memory integration and n8n workflow automation.
 
 ## Features
 
