@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/compare/v1.0.1...v1.0.2) (2025-09-15)
+
+
+### Bug Fixes
+
+* correct import paths and TypeScript configuration ([cb96619](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/commit/cb966193e5cf22b3b4e142bef0aaccb5939f143a))
+
 ## [1.0.1](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/compare/v1.0.0...v1.0.1) (2025-09-15)
 
 
