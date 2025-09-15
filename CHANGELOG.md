@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/compare/v1.0.4...v1.0.5) (2025-09-15)
+
+
+### Bug Fixes
+
+* include src directory in published npm package ([29a15f8](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/commit/29a15f8356d6ee1b83e8258632947cf51607e644))
+
 ## [1.0.4](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/compare/v1.0.3...v1.0.4) (2025-09-15)
 
 
