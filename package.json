@@ -1,0 +1,40 @@
+{
+  "name": "7146-easy-agent-orchestrator",
+  "version": "1.0.0",
+  "description": "AI Agent Orchestrator with OpenRouter and MCP integration",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "demo": "node demo-openrouter.js",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
+    "test:watch": "NODE_OPTIONS='--experimental-vm-modules' jest --watch",
+    "mcp": "npx easy-mcp-server --port 3000 --mcp-port 3001 --api-dir ./api"
+  },
+  "keywords": [
+    "langgraph",
+    "agent",
+    "orchestrator",
+    "planning",
+    "execution",
+    "mcp",
+    "ai"
+  ],
+  "author": "boqiang.liang",
+  "license": "MIT",
+  "dependencies": {
+    "easy-mcp-server": "^1.0.90",
+    "dotenv": "^16.3.1",
+    "winston": "^3.11.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.8",
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
