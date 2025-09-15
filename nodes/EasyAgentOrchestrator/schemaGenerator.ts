@@ -59,7 +59,7 @@ export class N8nSchemaGenerator {
       const baseProp: INodeProperties = {
         displayName: this.formatDisplayName(propName),
         name: `toolArgs.${propName}`,
-        type: this.mapSchemaTypeToN8nType(schema.type),
+        type: this.mapSchemaTypeToN8nType(schema.type) as any,
         default: schema.default || '',
         description: schema.description || `Parameter: ${propName}`,
         displayOptions: {

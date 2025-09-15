@@ -63,15 +63,14 @@ export class N8nLLMIntegration {
 	private async executeLLMNode(llmNode: { nodeId: string; nodeType: string; nodeName: string }, inputData: INodeExecutionData[]) {
 		try {
 			// Use n8n's built-in execution system
-			const result = await this.executeFunctions.executeWorkflow(
-				llmNode.nodeId,
-				inputData
-			);
+			const result = await this.executeFunctions.executeWorkflow({
+				workflowId: llmNode.nodeId
+			} as any, inputData);
 			return result;
 		} catch (error) {
 			// Fallback: try to execute the node directly
 			try {
-				const result = await this.executeFunctions.executeNode(
+				const result = await (this.executeFunctions as any).executeNode(
 					llmNode.nodeId,
 					inputData
 				);
@@ -174,15 +173,14 @@ export class N8nMemoryIntegration {
 	private async executeMemoryNode(memoryNode: { nodeId: string; nodeType: string; nodeName: string }, inputData: INodeExecutionData[]) {
 		try {
 			// Use n8n's built-in execution system
-			const result = await this.executeFunctions.executeWorkflow(
-				memoryNode.nodeId,
-				inputData
-			);
+			const result = await this.executeFunctions.executeWorkflow({
+				workflowId: memoryNode.nodeId
+			} as any, inputData);
 			return result;
 		} catch (error) {
 			// Fallback: try to execute the node directly
 			try {
-				const result = await this.executeFunctions.executeNode(
+				const result = await (this.executeFunctions as any).executeNode(
 					memoryNode.nodeId,
 					inputData
 				);
@@ -280,15 +278,14 @@ export class N8nMCPIntegration {
 	private async executeMCPNode(mcpNode: { nodeId: string; nodeType: string; nodeName: string }, inputData: INodeExecutionData[]) {
 		try {
 			// Use n8n's built-in execution system
-			const result = await this.executeFunctions.executeWorkflow(
-				mcpNode.nodeId,
-				inputData
-			);
+			const result = await this.executeFunctions.executeWorkflow({
+				workflowId: mcpNode.nodeId
+			} as any, inputData);
 			return result;
 		} catch (error) {
 			// Fallback: try to execute the node directly
 			try {
-				const result = await this.executeFunctions.executeNode(
+				const result = await (this.executeFunctions as any).executeNode(
 					mcpNode.nodeId,
 					inputData
 				);

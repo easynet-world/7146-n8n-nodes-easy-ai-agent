@@ -15,7 +15,7 @@ export class N8nWorkflowAnalyzer {
     try {
       // Get all nodes in the current workflow
       const workflowNodes = this.executeFunctions.getWorkflowStaticData('global');
-      const allNodes = this.executeFunctions.getNodes();
+      const allNodes = (this.executeFunctions as any).getNodes() || [];
       
       for (const node of allNodes) {
         const nodeType = node.type;
@@ -44,7 +44,7 @@ export class N8nWorkflowAnalyzer {
     const memoryNodes: Array<{ nodeId: string; nodeType: string; nodeName: string }> = [];
     
     try {
-      const allNodes = this.executeFunctions.getNodes();
+      const allNodes = (this.executeFunctions as any).getNodes() || [];
       
       for (const node of allNodes) {
         const nodeType = node.type;
@@ -73,7 +73,7 @@ export class N8nWorkflowAnalyzer {
     const mcpNodes: Array<{ nodeId: string; nodeType: string; nodeName: string }> = [];
     
     try {
-      const allNodes = this.executeFunctions.getNodes();
+      const allNodes = (this.executeFunctions as any).getNodes() || [];
       
       for (const node of allNodes) {
         const nodeType = node.type;

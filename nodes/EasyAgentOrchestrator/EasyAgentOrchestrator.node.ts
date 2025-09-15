@@ -4,6 +4,7 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	NodeOperationError,
+	NodeConnectionType,
 } from 'n8n-workflow';
 
 import { EasyAgentOrchestrator } from '../../src/agents/EasyAgentOrchestrator.js';
@@ -23,8 +24,8 @@ export class EasyAgentOrchestratorNode implements INodeType {
 		defaults: {
 			name: 'Easy Agent Orchestrator',
 		},
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: [NodeConnectionType.Main],
+		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
 				name: 'easyAgentOrchestratorApi',
