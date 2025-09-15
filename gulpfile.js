@@ -1,4 +1,5 @@
 const { src, dest, series } = require('gulp');
+const babel = require('gulp-babel');
 
 function buildIcons() {
 	return src('nodes/**/*.{png,svg}')
@@ -6,7 +7,11 @@ function buildIcons() {
 }
 
 function copySrc() {
-	return src('src/**/*')
+	return src('src/**/*.js')
+		.pipe(babel({
+			presets: ['@babel/preset-env'],
+			plugins: ['@babel/plugin-transform-modules-commonjs']
+		}))
 		.pipe(dest('dist/nodes/EasyAgentOrchestrator/src'));
 }
 
