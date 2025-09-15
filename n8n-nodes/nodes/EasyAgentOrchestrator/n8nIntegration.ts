@@ -3,6 +3,7 @@ import {
 	INodeExecutionData,
 	NodeOperationError,
 } from 'n8n-workflow';
+import { N8nSchemaValidator } from './schemaValidator.js';
 
 /**
  * Integration helper for n8n LLM nodes
@@ -174,18 +175,35 @@ export class N8nMCPIntegration {
 		}
 	}
 
-	async callTool(toolName: string, arguments_: any) {
+	async callTool(toolName: string, arguments_: any, schema?: any) {
 		try {
+			// Validate arguments against schema if provided
+			if (schema) {
+				const validation = N8nSchemaValidator.validateMCPToolArgs(toolName, arguments_, schema);
+				if (!validation.valid) {
+					throw new NodeOperationError(
+						this.executeFunctions.getNode(),
+						`Invalid arguments for tool '${toolName}': ${validation.errors.join(', ')}`
+					);
+				}
+			}
+
 			const mcpNode = await this.findMCPNode();
 			if (!mcpNode) {
 				throw new Error('No MCP node found in the workflow');
 			}
 
+			// Sanitize arguments
+			const sanitizedArgs = schema ? 
+				N8nSchemaValidator.validateAndSanitizeMCPToolArgs(toolName, arguments_, schema) : 
+				arguments_;
+
 			const inputData: INodeExecutionData[] = [{
 				json: {
 					operation: 'callTool',
 					toolName,
-					arguments: arguments_,
+					arguments: sanitizedArgs,
+					schema: schema, // Include schema for reference
 				},
 			}];
 

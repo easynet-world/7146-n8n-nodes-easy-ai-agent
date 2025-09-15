@@ -8,6 +8,7 @@ import {
 
 import { EasyAgentOrchestrator } from '../../../src/agents/EasyAgentOrchestrator.js';
 import { createLogger } from '../../../src/utils/logger.js';
+import { N8nSchemaGenerator } from './schemaGenerator.js';
 
 export class EasyAgentOrchestratorNode implements INodeType {
 	description: INodeTypeDescription = {
@@ -53,6 +54,12 @@ export class EasyAgentOrchestratorNode implements INodeType {
 						value: 'clearSession',
 						description: 'Clear the memory session for a specific session ID',
 						action: 'Clear session',
+					},
+					{
+						name: 'List Available Tools',
+						value: 'listTools',
+						description: 'List all available MCP tools with their schemas',
+						action: 'List tools',
 					},
 				],
 				default: 'executeGoal',
@@ -177,6 +184,12 @@ export class EasyAgentOrchestratorNode implements INodeType {
 					},
 				],
 			},
+			// Generated MCP Tool Schemas
+			...N8nSchemaGenerator.generateCommonMCPToolSchemas(),
+			// Generated LLM Configuration Schemas
+			...N8nSchemaGenerator.generateLLMConfigSchema(),
+			// Generated Memory Configuration Schemas
+			...N8nSchemaGenerator.generateMemoryConfigSchema(),
 		],
 	};
 
@@ -273,6 +286,27 @@ export class EasyAgentOrchestratorNode implements INodeType {
 							result = await planner.clearSession(sessionId);
 						} else {
 							result = { success: false, error: 'Memory not available' };
+						}
+						break;
+					}
+
+					case 'listTools': {
+						// Get the planner agent to access MCP tools
+						const planner = (orchestrator as any).agents.get('planner');
+						if (planner && planner.mcp) {
+							const toolsResult = await planner.mcp.listTools();
+							result = {
+								success: true,
+								tools: toolsResult.tools || [],
+								schemas: N8nSchemaGenerator.generateCommonMCPToolSchemas(),
+								count: toolsResult.tools?.length || 0
+							};
+						} else {
+							result = { 
+								success: false, 
+								error: 'MCP client not available',
+								schemas: N8nSchemaGenerator.generateCommonMCPToolSchemas()
+							};
 						}
 						break;
 					}

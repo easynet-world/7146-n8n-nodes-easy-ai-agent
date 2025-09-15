@@ -9,6 +9,8 @@ This n8n community node provides integration with the Easy Agent Orchestrator, e
 - 💾 **Memory Persistence**: Redis-based conversation history and goal tracking
 - 🔗 **n8n Integration**: Works with existing n8n LLM, Memory, and MCP nodes
 - 📊 **Comprehensive Logging**: Detailed execution tracking and monitoring
+- ✅ **JSON Schema Validation**: Automatic validation of MCP tool arguments with detailed error messages
+- 🛠️ **Dynamic Tool Discovery**: Automatically discovers and validates available MCP tools
 
 ## Installation
 
@@ -61,6 +63,37 @@ The node requires the following credentials:
     "includeCharts": true
   }
 }
+```
+
+### JSON Schema Validation
+
+The node automatically validates MCP tool arguments against JSON schemas:
+
+```json
+{
+  "toolName": "post_web-extractor_extract",
+  "toolArgs": {
+    "url": "https://example.com",
+    "selector": "body",
+    "timeout": 30
+  }
+}
+```
+
+**Validation Features:**
+- ✅ **Type Checking**: Ensures arguments match expected types (string, number, boolean, etc.)
+- ✅ **Required Fields**: Validates that all required parameters are provided
+- ✅ **Format Validation**: Checks URLs, emails, and other formatted strings
+- ✅ **Range Validation**: Validates numeric ranges and string lengths
+- ✅ **Enum Validation**: Ensures values match allowed options
+- ✅ **Auto-sanitization**: Removes undefined values and applies defaults
+
+**Error Messages:**
+```
+Invalid arguments for tool 'post_web-extractor_extract': 
+- Required field 'url' is missing or empty
+- Field 'timeout' must be at least 1
+- Field 'selector' must be a string
 ```
 
 ### Integration with n8n Nodes

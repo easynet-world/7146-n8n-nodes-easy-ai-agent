@@ -129,17 +129,18 @@ export class EasyAgent {
   }
 
   async _createPlan(goal, context) {
-    // Try to use OpenRouter for intelligent planning
+    // Try to use LLM for intelligent planning
     if (this.llm) {
       try {
         return await this._createPlanWithLLM(goal, context);
       } catch (error) {
-        this.logger.warn(`LLM planning failed, falling back to rule-based: ${error.message}`);
+        this.logger.error(`LLM planning failed: ${error.message}`);
+        throw new Error(`Unable to create intelligent plan: ${error.message}. Please check LLM configuration and try again.`);
       }
     }
 
-    // Fallback to rule-based planning
-    return this._createPlanRuleBased(goal, context);
+    // No LLM available
+    throw new Error('No LLM provider available for intelligent planning. Please configure OpenRouter or Ollama in your environment variables.');
   }
 
   async _createPlanWithLLM(goal, context) {
@@ -207,50 +208,10 @@ ${JSON.stringify(context, null, 2)}${toolsInfo}
       this.logger.debug(`Raw response: ${response.content}`);
     }
 
-    // If parsing fails, fall back to rule-based
-    return this._createPlanRuleBased(goal, context);
+    // If parsing fails, throw an error with specific details
+    throw new Error(`Failed to parse LLM response as valid task plan. Response format was invalid. Please check LLM configuration and model compatibility.`);
   }
 
-  _createPlanRuleBased(goal, context) {
-    const goalType = this._identifyGoalType(goal);
-    
-    switch (goalType) {
-      case 'data_analysis':
-        return [
-          { id: 'task_1', description: 'Conduct comprehensive data structure assessment and quality validation', status: 'pending', priority: 'high', dependencies: [], estimatedDuration: 30 },
-          { id: 'task_2', description: 'Execute advanced statistical analysis and pattern recognition', status: 'pending', priority: 'high', dependencies: ['task_1'], estimatedDuration: 45 },
-          { id: 'task_3', description: 'Synthesize analytical findings into strategic business insights and actionable recommendations', status: 'pending', priority: 'medium', dependencies: ['task_2'], estimatedDuration: 30 },
-          { id: 'task_4', description: 'Develop professional data visualizations and interactive dashboards', status: 'pending', priority: 'medium', dependencies: ['task_2'], estimatedDuration: 25 },
-          { id: 'task_5', description: 'Compile executive summary and comprehensive analytical report', status: 'pending', priority: 'high', dependencies: ['task_3', 'task_4'], estimatedDuration: 20 }
-        ];
-      
-      case 'marketing_strategy':
-        return [
-          { id: 'task_1', description: 'Conduct comprehensive market research and competitive landscape analysis', status: 'pending', priority: 'high', dependencies: [], estimatedDuration: 40 },
-          { id: 'task_2', description: 'Develop strategic value proposition and brand positioning framework', status: 'pending', priority: 'high', dependencies: ['task_1'], estimatedDuration: 35 },
-          { id: 'task_3', description: 'Design integrated marketing channel strategy and tactical execution plan', status: 'pending', priority: 'medium', dependencies: ['task_2'], estimatedDuration: 30 },
-          { id: 'task_4', description: 'Create comprehensive content strategy and budget allocation framework', status: 'pending', priority: 'medium', dependencies: ['task_3'], estimatedDuration: 25 },
-          { id: 'task_5', description: 'Establish detailed implementation roadmap with key performance indicators', status: 'pending', priority: 'high', dependencies: ['task_4'], estimatedDuration: 20 }
-        ];
-      
-      case 'process_automation':
-        return [
-          { id: 'task_1', description: 'Conduct comprehensive current state process mapping and gap analysis', status: 'pending', priority: 'high', dependencies: [], estimatedDuration: 35 },
-          { id: 'task_2', description: 'Identify and prioritize automation opportunities with ROI assessment', status: 'pending', priority: 'high', dependencies: ['task_1'], estimatedDuration: 30 },
-          { id: 'task_3', description: 'Design optimized automated workflow architecture and integration framework', status: 'pending', priority: 'medium', dependencies: ['task_2'], estimatedDuration: 40 },
-          { id: 'task_4', description: 'Implement enterprise-grade automation solutions with monitoring capabilities', status: 'pending', priority: 'high', dependencies: ['task_3'], estimatedDuration: 50 },
-          { id: 'task_5', description: 'Execute comprehensive testing, validation, and performance optimization', status: 'pending', priority: 'high', dependencies: ['task_4'], estimatedDuration: 25 }
-        ];
-      
-      default:
-        return [
-          { id: 'task_1', description: `Conduct comprehensive analysis and requirements assessment for: ${goal}`, status: 'pending', priority: 'high', dependencies: [], estimatedDuration: 20 },
-          { id: 'task_2', description: 'Develop structured execution framework with defined deliverables and success criteria', status: 'pending', priority: 'high', dependencies: ['task_1'], estimatedDuration: 25 },
-          { id: 'task_3', description: 'Execute strategic implementation with quality assurance and progress monitoring', status: 'pending', priority: 'medium', dependencies: ['task_2'], estimatedDuration: 30 },
-          { id: 'task_4', description: 'Conduct comprehensive validation, performance review, and deliverable assessment', status: 'pending', priority: 'medium', dependencies: ['task_3'], estimatedDuration: 15 }
-        ];
-    }
-  }
 
   async _executePlan(plan, context) {
     const results = [];
@@ -422,19 +383,6 @@ ${JSON.stringify(context, null, 2)}
     return `**Simulation Summary**\n**Task**: ${task.description}\n**Status**: Simulated Execution\n**Result**: Task simulation completed successfully. In a production environment, this would execute the actual business logic and return comprehensive results.`;
   }
 
-  _identifyGoalType(goal) {
-    const goalLower = goal.toLowerCase();
-    
-    if (goalLower.includes('data') && goalLower.includes('analysis')) {
-      return 'data_analysis';
-    } else if (goalLower.includes('marketing') || goalLower.includes('strategy')) {
-      return 'marketing_strategy';
-    } else if (goalLower.includes('automation') || goalLower.includes('process')) {
-      return 'process_automation';
-    }
-    
-    return 'generic';
-  }
 
   getStatus() {
     return {
