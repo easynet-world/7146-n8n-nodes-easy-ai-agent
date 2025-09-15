@@ -4,10 +4,6 @@ on:
   push:
     branches: [master]
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   release:
     runs-on: self-hosted
@@ -17,12 +13,6 @@ jobs:
         with:
           persist-credentials: true
           fetch-depth: 0
-
-      - name: Check for in-progress runs
-        run: |
-          echo "🚀 Starting release workflow for ${{ github.ref }}"
-          echo "📦 Package: n8n-nodes-easy-ai-agent"
-          echo "🔄 Concurrency: Previous runs will be cancelled"
 
       - name: Install dependencies
         run: npm ci
