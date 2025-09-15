@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/compare/v1.0.5...v1.0.6) (2025-09-15)
+
+
+### Bug Fixes
+
+* copy src directory to dist during build to resolve module import ([fa174fb](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/commit/fa174fb395ed78b491e87f00b61e1204cd14209f))
+
 ## [1.0.5](https://github.com/easynet-world/7146-n8n-nodes-easy-ai-agent/compare/v1.0.4...v1.0.5) (2025-09-15)
 
 
