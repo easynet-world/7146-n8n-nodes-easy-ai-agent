@@ -7,8 +7,9 @@ import {
 	NodeConnectionType,
 } from 'n8n-workflow';
 
-import { EasyAgentOrchestrator } from '../../src/agents/EasyAgentOrchestrator.js';
-import { createLogger } from '../../src/utils/logger.js';
+// Dynamic imports to handle module resolution at runtime
+let EasyAgentOrchestrator: any;
+let createLogger: any;
 import { N8nSchemaGenerator } from './schemaGenerator.js';
 import { N8nIntegrationCoordinator } from './n8nIntegration.js';
 
@@ -196,6 +197,18 @@ export class EasyAgentOrchestratorNode implements INodeType {
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+		// Dynamically load required modules
+		if (!EasyAgentOrchestrator || !createLogger) {
+			try {
+				const EasyAgentOrchestratorModule = require('./src/agents/EasyAgentOrchestrator.js');
+				const LoggerModule = require('./src/utils/logger.js');
+				EasyAgentOrchestrator = EasyAgentOrchestratorModule.EasyAgentOrchestrator;
+				createLogger = LoggerModule.createLogger;
+			} catch (error) {
+				throw new NodeOperationError(this.getNode(), `Failed to load required modules: ${error instanceof Error ? error.message : String(error)}`);
+			}
+		}
+
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 

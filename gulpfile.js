@@ -7,7 +7,7 @@ function buildIcons() {
 
 function copySrc() {
 	return src('src/**/*')
-		.pipe(dest('dist/src'));
+		.pipe(dest('dist/nodes/EasyAgentOrchestrator/src'));
 }
 
 exports['build:icons'] = buildIcons;
