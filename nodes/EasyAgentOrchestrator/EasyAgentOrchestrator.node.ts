@@ -6,8 +6,8 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 
-import { EasyAgentOrchestrator } from '../../../src/agents/EasyAgentOrchestrator.js';
-import { createLogger } from '../../../src/utils/logger.js';
+import { EasyAgentOrchestrator } from '../../src/agents/EasyAgentOrchestrator.js';
+import { createLogger } from '../../src/utils/logger.js';
 import { N8nSchemaGenerator } from './schemaGenerator.js';
 import { N8nIntegrationCoordinator } from './n8nIntegration.js';
 
