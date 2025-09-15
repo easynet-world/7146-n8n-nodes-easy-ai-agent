@@ -44,7 +44,8 @@
     "test:watch": "NODE_OPTIONS='--experimental-vm-modules' jest --watch"
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "n8n": {
     "n8nNodesApiVersion": 1,
