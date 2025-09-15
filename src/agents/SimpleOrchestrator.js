@@ -32,10 +32,19 @@ export class SimpleOrchestrator {
     this.logger.info(`Starting goal execution: ${goal}`);
     
     try {
-      // Phase 1: Planning
-      this.logger.info('Phase 1: Planning');
+      // Phase 1: Discovery & Planning
+      this.logger.info('Phase 1: Discovery & Planning');
+      
+      // First, discover available MCP tools
       const planner = this.agents.get('planner');
-      const planResult = await planner.execute(goal, context);
+      const availableTools = await planner.discoverTools();
+      this.logger.info(`Discovered ${availableTools.length} available MCP tools`);
+      
+      // Create plan with tool context
+      const planResult = await planner.execute(goal, {
+        ...context,
+        availableTools: availableTools
+      });
       
       if (!planResult.success) {
         throw new Error(`Planning failed: ${planResult.error}`);

@@ -28,6 +28,26 @@ export class SimpleAgent {
     }
   }
 
+  async discoverTools() {
+    this.logger.info('Discovering available MCP tools');
+    
+    try {
+      if (this.mcp) {
+        const toolsResult = await this.mcp.listTools();
+        if (toolsResult && toolsResult.tools) {
+          this.logger.info(`Found ${toolsResult.tools.length} MCP tools`);
+          return toolsResult.tools;
+        }
+      }
+      
+      this.logger.warn('No MCP tools available');
+      return [];
+    } catch (error) {
+      this.logger.error(`Failed to discover MCP tools: ${error.message}`);
+      return [];
+    }
+  }
+
   async execute(goal, context = {}) {
     this.logger.info(`Executing goal: ${goal}`);
     
@@ -82,6 +102,11 @@ export class SimpleAgent {
   }
 
   async _createPlanWithLLM(goal, context) {
+    const availableTools = context.availableTools || [];
+    const toolsInfo = availableTools.length > 0 
+      ? `\n\nAvailable MCP Tools:\n${availableTools.map(tool => `- ${tool.name}: ${tool.description}`).join('\n')}`
+      : '\n\nNo MCP tools available - use simulation or LLM-based execution.';
+
     const systemPrompt = `You are an expert planning agent. Your role is to break down complex goals into specific, actionable tasks.
 
 Create a detailed plan with 3-7 tasks that are:
@@ -89,6 +114,7 @@ Create a detailed plan with 3-7 tasks that are:
 2. Logically ordered with dependencies
 3. Clear and measurable
 4. Appropriate for the goal type
+5. Utilize available MCP tools when applicable
 
 Return the plan as a JSON array of task objects with this structure:
 [
@@ -97,15 +123,16 @@ Return the plan as a JSON array of task objects with this structure:
     "description": "Clear task description",
     "priority": "high|medium|low",
     "dependencies": [],
-    "estimatedDuration": 30
+    "estimatedDuration": 30,
+    "preferredTool": "tool_name_or_simulation"
   }
 ]`;
 
     const userMessage = `Goal: ${goal}
 
-Context: ${JSON.stringify(context, null, 2)}
+Context: ${JSON.stringify(context, null, 2)}${toolsInfo}
 
-Please create a detailed plan for achieving this goal.`;
+Please create a detailed plan for achieving this goal, utilizing available MCP tools when appropriate.`;
 
     const response = await this.llm.generateResponse(systemPrompt, userMessage, {
       temperature: 0.3,
@@ -129,6 +156,7 @@ Please create a detailed plan for achieving this goal.`;
           priority: task.priority || 'medium',
           dependencies: task.dependencies || [],
           estimatedDuration: task.estimatedDuration || 30,
+          preferredTool: task.preferredTool || 'simulation',
           status: 'pending'
         }));
       }
@@ -189,13 +217,15 @@ Please create a detailed plan for achieving this goal.`;
       try {
         const startTime = Date.now();
         
-        // Try to execute using MCP tools first, then LLM, then fallback
+        // Execute using preferred tool or fallback strategy
         let taskResult;
-        if (this.mcp) {
+        const preferredTool = task.preferredTool || 'simulation';
+        
+        if (preferredTool !== 'simulation' && this.mcp) {
           try {
-            taskResult = await this._executeTaskWithMCP(task, context);
+            taskResult = await this._executeTaskWithMCP(task, context, preferredTool);
           } catch (mcpError) {
-            this.logger.warn(`MCP execution failed, trying LLM: ${mcpError.message}`);
+            this.logger.warn(`MCP execution with ${preferredTool} failed, trying LLM: ${mcpError.message}`);
             taskResult = await this._executeTaskWithLLM(task, context);
           }
         } else if (this.llm) {
@@ -238,18 +268,32 @@ Please create a detailed plan for achieving this goal.`;
     return results;
   }
 
-  async _executeTaskWithMCP(task, context) {
+  async _executeTaskWithMCP(task, context, preferredTool = null) {
     // Try to find an appropriate MCP tool for the task
     const availableTools = await this.mcp.listTools();
     
     if (availableTools.tools && availableTools.tools.length > 0) {
-      // Find the most appropriate tool based on task description
-      const toolName = this._selectMCPTool(task, availableTools.tools);
+      let toolName;
+      
+      // Use preferred tool if specified and available
+      if (preferredTool && preferredTool !== 'simulation') {
+        const preferredToolExists = availableTools.tools.find(tool => tool.name === preferredTool);
+        if (preferredToolExists) {
+          toolName = preferredTool;
+        } else {
+          this.logger.warn(`Preferred tool '${preferredTool}' not available, selecting alternative`);
+        }
+      }
+      
+      // Fallback to intelligent selection if preferred tool not available
+      if (!toolName) {
+        toolName = this._selectMCPTool(task, availableTools.tools);
+      }
       
       if (toolName) {
         const toolArgs = this._prepareMCPToolArgs(task, context);
         const mcpResult = await this.mcp.callTool(toolName, toolArgs);
-        return `MCP Tool Result: ${JSON.stringify(mcpResult)}`;
+        return `MCP Tool Result (${toolName}): ${JSON.stringify(mcpResult)}`;
       }
     }
     

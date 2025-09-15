@@ -89,23 +89,24 @@ sequenceDiagram
     Main->>Logger: Log goal execution start
     Main->>Orchestrator: executeGoal(goal, context)
     
-    Note over Orchestrator: Phase 1: Planning
+    Note over Orchestrator: Phase 1: Discovery & Planning
     Orchestrator->>Logger: Log planning phase start
-    Orchestrator->>Planner: execute(goal, context)
+    Orchestrator->>MCP: listTools()
+    MCP-->>Orchestrator: Available tools list
+    Orchestrator->>Logger: Log discovered tools
     
-    Planner->>OpenRouter: generateResponse(systemPrompt, userMessage)
-    OpenRouter-->>Planner: AI-generated plan
+    Orchestrator->>Planner: execute(goal, context, availableTools)
+    Planner->>OpenRouter: generateResponse(systemPrompt + toolInfo, userMessage)
+    OpenRouter-->>Planner: AI-generated plan with tool assignments
     Planner->>Logger: Log plan creation
-    Planner-->>Orchestrator: Return plan with tasks
+    Planner-->>Orchestrator: Return plan with tasks and tool mappings
     
     Note over Orchestrator: Phase 2: Execution
     Orchestrator->>Logger: Log execution phase start
-    Orchestrator->>Executor: execute(goal, context)
+    Orchestrator->>Executor: execute(goal, context, plan)
     
     loop For each task in plan
-        Executor->>MCP: listTools()
-        MCP-->>Executor: Available tools list
-        Executor->>MCP: callTool(toolName, args)
+        Executor->>MCP: callTool(assignedTool, taskArgs)
         MCP-->>Executor: Tool execution result
         Executor->>Logger: Log task completion
     end
@@ -134,17 +135,17 @@ sequenceDiagram
     
     Note over Orchestrator: Goal Execution Workflow
     
-    Orchestrator->>Planner: Create plan for goal
-    Planner->>OpenRouter: Generate AI plan
-    OpenRouter-->>Planner: Structured task list
-    Planner-->>Orchestrator: Plan with tasks
+    Orchestrator->>MCP: Discover available tools
+    MCP-->>Orchestrator: Tool registry with capabilities
+    Orchestrator->>Planner: Create plan with tool context
+    Planner->>OpenRouter: Generate AI plan with tool assignments
+    OpenRouter-->>Planner: Structured task list with tool mappings
+    Planner-->>Orchestrator: Plan with tasks and tool assignments
     
-    Orchestrator->>Executor: Execute plan
-    loop For each task
-        Executor->>MCP: Get available tools
-        MCP-->>Executor: Tool list
-        Executor->>MCP: Select appropriate tool
-        MCP->>Tools: Execute tool
+    Orchestrator->>Executor: Execute plan with tool assignments
+    loop For each task with assigned tool
+        Executor->>MCP: Call specific tool
+        MCP->>Tools: Execute assigned tool
         Tools-->>MCP: Tool result
         MCP-->>Executor: Execution result
         Executor->>Executor: Process result
