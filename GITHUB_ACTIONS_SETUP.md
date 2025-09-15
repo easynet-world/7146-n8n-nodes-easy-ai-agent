@@ -15,8 +15,13 @@ To enable automated publishing, you need to configure the following secrets in y
   4. Copy the token and add it as `NPM_TOKEN` in GitHub repository secrets
 
 ### 2. GITHUB_TOKEN
-- **Purpose**: Automatically provided by GitHub Actions
-- **Note**: This is automatically available in GitHub Actions, no manual setup required
+- **Purpose**: Creates GitHub releases and commits version changes
+- **How to get**: 
+  1. Go to [GitHub Settings](https://github.com/settings/tokens)
+  2. Click "Generate new token" → "Generate new token (classic)"
+  3. Select scopes: `repo`, `write:packages`, `read:org`
+  4. Copy the token and add it as `GITHUB_TOKEN` in GitHub repository secrets
+- **Note**: This is different from the automatically provided GITHUB_TOKEN in GitHub Actions
 
 ## How to Add Secrets
 
@@ -90,9 +95,32 @@ npx semantic-release --dry-run
 ### Common Issues
 
 1. **NPM_TOKEN not found**: Ensure the secret is properly configured in GitHub
-2. **Permission denied**: Check that the npm token has publish permissions
-3. **Version already exists**: The workflow will skip publishing if version already exists
-4. **Tests failing**: Fix any failing tests before the workflow can proceed
+2. **GITHUB_TOKEN not found**: Create a personal access token with repo permissions
+3. **Permission denied**: Check that the npm token has publish permissions
+4. **Version already exists**: The workflow will skip publishing if version already exists
+5. **Tests failing**: Fix any failing tests before the workflow can proceed
+
+### Error: "No GitHub token specified"
+
+If you see this error in the GitHub Actions logs:
+
+```
+SemanticReleaseError: No GitHub token specified.
+A GitHub personal token must be created and set in the GH_TOKEN or GITHUB_TOKEN environment variable
+```
+
+**Solution:**
+1. Go to [GitHub Settings > Personal Access Tokens](https://github.com/settings/tokens)
+2. Click "Generate new token" → "Generate new token (classic)"
+3. Give it a name like "n8n-nodes-easy-ai-agent-release"
+4. Select scopes: `repo`, `write:packages`, `read:org`
+5. Click "Generate token"
+6. Copy the token
+7. Go to your repository Settings > Secrets and variables > Actions
+8. Click "New repository secret"
+9. Name: `GITHUB_TOKEN`
+10. Value: Paste the token you copied
+11. Click "Add secret"
 
 ### Workflow Status
 
