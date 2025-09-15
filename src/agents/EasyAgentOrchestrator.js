@@ -1,23 +1,23 @@
-import { SimpleAgent } from './SimpleAgent.js';
+import { EasyAgent } from './EasyAgent.js';
 import { createLogger } from '../utils/logger.js';
 
-export class SimpleOrchestrator {
+export class EasyAgentOrchestrator {
   constructor(config) {
     this.config = config;
-    this.logger = createLogger('SimpleOrchestrator');
+    this.logger = createLogger('EasyAgentOrchestrator');
     this.agents = new Map();
     this._initializeAgents();
   }
 
   _initializeAgents() {
     // Create planning agent
-    const planningAgent = new SimpleAgent({
+    const planningAgent = new EasyAgent({
       name: 'planner',
       capabilities: ['planning', 'task_decomposition', 'strategy_development']
     });
 
     // Create execution agent
-    const executionAgent = new SimpleAgent({
+    const executionAgent = new EasyAgent({
       name: 'executor',
       capabilities: ['execution', 'task_execution', 'implementation']
     });
@@ -25,7 +25,7 @@ export class SimpleOrchestrator {
     this.agents.set('planner', planningAgent);
     this.agents.set('executor', executionAgent);
 
-    this.logger.info('Initialized simple agents');
+    this.logger.info('Initialized Easy agents');
   }
 
   async executeGoal(goal, context = {}) {

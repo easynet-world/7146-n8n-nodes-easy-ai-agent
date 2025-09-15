@@ -1,14 +1,17 @@
-# AI Agent Orchestrator
+# Easy Agent Orchestrator
 
-A powerful AI agent orchestrator that combines OpenRouter (DeepSeek) and MCP (Model Context Protocol) for intelligent task planning and execution.
+A professional-grade AI agent orchestrator that combines OpenRouter (DeepSeek), Ollama, and MCP (Model Context Protocol) for enterprise-level task planning and execution with Redis memory integration and n8n workflow automation.
 
 ## Features
 
-- 🤖 **AI-Powered Planning**: Uses DeepSeek AI via OpenRouter for intelligent task breakdown
-- 🔧 **MCP Integration**: Connects to your existing MCP server for tool execution
-- 🧠 **Smart Orchestration**: Coordinates multiple agents for complex workflows
-- 📊 **Comprehensive Logging**: Detailed execution tracking and monitoring
-- 🚀 **Easy Integration**: Simple API for executing complex goals
+- 🤖 **Professional AI Planning**: Uses DeepSeek AI via OpenRouter or Ollama with enterprise-grade prompts for strategic task breakdown
+- 🔧 **MCP Integration**: Connects to your existing MCP server for comprehensive tool execution
+- 🧠 **Smart Orchestration**: Coordinates multiple EasyAgents for complex business workflows
+- 💾 **Redis Memory**: Persistent conversation history and goal tracking with session management
+- 📊 **Comprehensive Logging**: Detailed execution tracking and monitoring with Winston
+- 🚀 **Easy Integration**: Simple API for executing complex goals with professional output
+- 🔗 **n8n Integration**: Full n8n node package for workflow automation
+- 🎯 **Enterprise Ready**: Professional prompts and business-grade deliverables
 
 ## Architecture Overview
 
@@ -18,26 +21,27 @@ A powerful AI agent orchestrator that combines OpenRouter (DeepSeek) and MCP (Mo
 graph TB
     subgraph "Client Layer"
         CLI[CLI Interface]
-        API[REST API]
         DEMO[Demo Scripts]
+        TEST[Test Scripts]
     end
     
-    subgraph "Core Orchestrator"
-        MAIN[Main Entry Point<br/>src/index.js]
-        ORCH[Simple Orchestrator<br/>src/agents/SimpleOrchestrator.js]
-        AGENT[Simple Agent<br/>src/agents/SimpleAgent.js]
-    end
+        subgraph "Core Orchestrator"
+            MAIN[Main Entry Point<br/>src/index.js]
+            ORCH[Easy Agent Orchestrator<br/>src/agents/EasyAgentOrchestrator.js]
+            AGENT[Easy Agent<br/>src/agents/EasyAgent.js]
+        end
     
     subgraph "External Services"
         OPENROUTER[OpenRouter API<br/>DeepSeek AI]
         MCP_SERVER[MCP Server<br/>Tool Execution]
     end
     
-    subgraph "Utilities"
-        LOGGER[Winston Logger<br/>src/utils/logger.js]
-        MCP_CLIENT[MCP Client<br/>src/utils/mcpClient.js]
-        OPENROUTER_CLIENT[OpenRouter Client<br/>src/utils/openrouter.js]
-    end
+        subgraph "Utilities"
+            LOGGER[Winston Logger<br/>src/utils/logger.js]
+            MCP_CLIENT[MCP Client<br/>src/utils/mcpClient.js]
+            LLM_CLIENT[LLM Client<br/>src/utils/llmClient.js]
+            MEMORY_CLIENT[Redis Memory<br/>src/utils/memoryClient.js]
+        end
     
     subgraph "MCP Tools"
         HEALTH[Health Check]
@@ -48,17 +52,18 @@ graph TB
     end
     
     CLI --> MAIN
-    API --> MAIN
     DEMO --> MAIN
+    TEST --> MAIN
     
     MAIN --> ORCH
     ORCH --> AGENT
     
-    AGENT --> OPENROUTER_CLIENT
-    AGENT --> MCP_CLIENT
-    
-    OPENROUTER_CLIENT --> OPENROUTER
-    MCP_CLIENT --> MCP_SERVER
+        AGENT --> LLM_CLIENT
+        AGENT --> MCP_CLIENT
+        AGENT --> MEMORY_CLIENT
+        
+        LLM_CLIENT --> OPENROUTER
+        MCP_CLIENT --> MCP_SERVER
     
     MCP_SERVER --> HEALTH
     MCP_SERVER --> WORDPRESS
@@ -66,10 +71,11 @@ graph TB
     MCP_SERVER --> SEARCH
     MCP_SERVER --> WEB
     
-    ORCH --> LOGGER
-    AGENT --> LOGGER
-    MCP_CLIENT --> LOGGER
-    OPENROUTER_CLIENT --> LOGGER
+        ORCH --> LOGGER
+        AGENT --> LOGGER
+        MCP_CLIENT --> LOGGER
+        LLM_CLIENT --> LOGGER
+        MEMORY_CLIENT --> LOGGER
 ```
 
 ### Execution Flow Sequence Diagram
@@ -293,17 +299,25 @@ cp env.example .env
 Edit `.env` with your credentials:
 
 ```ini
-# OpenRouter Configuration
-OPENROUTER_API_KEY=your_openrouter_api_key_here
+# LLM Configuration
+LLM_PROVIDER=ollama
+LLM_MODEL=gpt-oss-80k:latest
+LLM_BASE_URL=https://ollama-rtx-4070.easynet.world
+
+# OpenRouter Configuration (Alternative)
+OPENROUTER_API_KEY=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
 OPENROUTER_MODEL=deepseek/deepseek-chat-v3.1:free
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 
 # MCP Server Configuration
-MCP_SERVER_URL=http://your-mcp-server:3001
+MCP_SERVER_URL=http://easynet-world-7140-mcp-internaleasynetworld-service:3001
+
+# Redis Configuration
+REDIS_URL=redis://redis-service:6379
+REDIS_PASSWORD=redis123456
+REDIS_DB=0
 
 # Server Configuration
-PORT=3000
-MCP_PORT=3001
 NODE_ENV=development
 LOG_LEVEL=info
 ```
@@ -314,10 +328,52 @@ LOG_LEVEL=info
 npm run demo
 ```
 
-### 4. Start MCP Server
+### 4. Run Tests
 
 ```bash
-npm run mcp
+npm test
+```
+
+### 5. n8n Integration
+
+For n8n workflow automation, install the n8n node package:
+
+```bash
+cd n8n-nodes
+chmod +x install.sh
+./install.sh
+```
+
+The Easy Agent Orchestrator node will be available in your n8n workflow editor.
+
+## Professional Features
+
+### Enterprise-Grade Prompts
+
+The Easy Agent Orchestrator uses professional, business-grade prompts that deliver:
+
+- **Strategic Planning**: Senior consultant-level task breakdown with clear deliverables
+- **Executive Communication**: Professional language suitable for stakeholder presentations
+- **Comprehensive Analysis**: Detailed business analysis with strategic insights
+- **Quality Assurance**: Rigorous validation and professional reporting standards
+- **Tool Optimization**: Intelligent MCP tool selection and utilization
+
+### Professional Output Examples
+
+**Planning Agent Output:**
+```
+Conduct comprehensive data structure assessment and quality validation
+Execute advanced statistical analysis and pattern recognition
+Synthesize analytical findings into strategic business insights and actionable recommendations
+```
+
+**Execution Agent Output:**
+```
+**Executive Summary**: High-level overview of accomplishments and key outcomes
+**Detailed Analysis**: Comprehensive findings with supporting evidence and methodology
+**Strategic Recommendations**: Actionable next steps with clear rationale and expected impact
+**Risk Assessment**: Identification of potential challenges and mitigation strategies
+**Success Metrics**: Quantifiable measures of task completion and value delivered
 ```
 
 ## Usage
@@ -357,24 +413,20 @@ const result = await orchestrator.executeGoal('Your complex goal here', {
 ```
 src/
 ├── agents/
-│   ├── SimpleAgent.js      # Core agent implementation
-│   └── SimpleOrchestrator.js # Agent coordination
+│   ├── EasyAgent.js        # Core agent implementation
+│   └── EasyAgentOrchestrator.js # Agent coordination
 ├── utils/
 │   ├── logger.js           # Logging utilities
+│   ├── llmClient.js        # LLM client (OpenRouter/Ollama)
 │   ├── mcpClient.js        # MCP server client
-│   └── openrouter.js       # OpenRouter API client
+│   └── memoryClient.js     # Redis memory client
 └── index.js                # Main entry point
-
-api/                        # MCP server API endpoints
-├── orchestrator/
-│   ├── execute.js
-│   └── status.js
-└── agents/
-    └── list.js
 
 tests/                      # Test files
 ├── integration.test.js
 └── ...
+
+demo-openrouter.js          # Demonstration script
 ```
 
 ## Available MCP Tools
@@ -390,13 +442,13 @@ The orchestrator can use these MCP tools from your server:
 - `post_youtube_channel-videos` - YouTube channel monitoring
 - `post_youtube_subscriptions` - YouTube subscriptions
 
-## API Endpoints
+## Available Scripts
 
-When running the MCP server (`npm run mcp`):
-
-- `POST /orchestrator/execute` - Execute a goal
-- `GET /orchestrator/status` - Get orchestrator status
-- `GET /agents/list` - List available agents
+- `npm start` - Run the main application
+- `npm run dev` - Run in development mode with auto-reload
+- `npm run demo` - Run the demonstration script
+- `npm test` - Run all tests
+- `npm run test:watch` - Run tests in watch mode
 
 ## Testing
 

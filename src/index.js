@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { SimpleOrchestrator } from './agents/SimpleOrchestrator.js';
+import { EasyAgentOrchestrator } from './agents/EasyAgentOrchestrator.js';
 import { createLogger } from './utils/logger.js';
 
 // Load environment variables
@@ -9,7 +9,7 @@ const logger = createLogger('Main');
 
 // Default orchestrator configuration
 const defaultConfig = {
-  name: 'Simple Agent Orchestrator',
+  name: 'Easy Agent Orchestrator',
   capabilities: ['planning', 'execution', 'coordination', 'validation']
 };
 
@@ -18,7 +18,7 @@ let orchestrator;
 
 async function initializeOrchestrator() {
   try {
-    logger.info('Initializing Simple Agent Orchestrator...');
+    logger.info('Initializing Easy Agent Orchestrator...');
     
     // Check for required environment variables
     if (!process.env.OPENAI_API_KEY && !process.env.ANTHROPIC_API_KEY) {
@@ -26,8 +26,8 @@ async function initializeOrchestrator() {
       logger.warn('Using mock mode for demonstration purposes.');
     }
     
-    orchestrator = new SimpleOrchestrator(defaultConfig);
-    logger.info('Simple Agent Orchestrator initialized successfully');
+    orchestrator = new EasyAgentOrchestrator(defaultConfig);
+    logger.info('Easy Agent Orchestrator initialized successfully');
     
     return orchestrator;
   } catch (error) {
@@ -96,7 +96,7 @@ async function main() {
 }
 
 // Export for use as module
-export { SimpleOrchestrator, initializeOrchestrator };
+export { EasyAgentOrchestrator, initializeOrchestrator };
 
 // Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {

@@ -1,0 +1,88 @@
+{
+  "name": "Easy Agent Orchestrator Example Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "easy-agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeGoal",
+        "goal": "={{ $json.goal }}",
+        "context": "={{ $json.context || '{}' }}",
+        "sessionId": "={{ $json.sessionId || '' }}",
+        "useN8nLLM": false,
+        "useN8nMemory": false,
+        "useN8nMCP": false,
+        "additionalOptions": {
+          "maxTasks": 10,
+          "temperature": 0.7,
+          "maxTokens": 4000,
+          "timeout": 300
+        }
+      },
+      "id": "easy-agent-orchestrator",
+      "name": "Easy Agent Orchestrator",
+      "type": "n8n-nodes-easy-agent-orchestrator.easyAgentOrchestrator",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "credentials": {
+        "easyAgentOrchestratorApi": {
+          "id": "easy-agent-credentials",
+          "name": "Easy Agent API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "webhook-response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Easy Agent Orchestrator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Easy Agent Orchestrator": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1",
+  "id": "easy-agent-workflow",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

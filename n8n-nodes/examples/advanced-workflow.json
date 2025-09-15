@@ -1,0 +1,200 @@
+{
+  "name": "Advanced Easy Agent Orchestrator Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeGoal",
+        "goal": "Generate weekly marketing report with competitor analysis and content recommendations",
+        "context": "{\"week\": \"{{ new Date().toISOString().slice(0, 10) }}\", \"focus\": \"digital marketing\", \"competitors\": [\"competitor1.com\", \"competitor2.com\"]}",
+        "sessionId": "weekly-report-{{ new Date().toISOString().slice(0, 10) }}",
+        "useN8nLLM": true,
+        "useN8nMemory": true,
+        "useN8nMCP": true,
+        "additionalOptions": {
+          "maxTasks": 15,
+          "temperature": 0.3,
+          "maxTokens": 6000,
+          "timeout": 600
+        }
+      },
+      "id": "easy-agent-orchestrator",
+      "name": "Easy Agent Orchestrator",
+      "type": "n8n-nodes-easy-agent-orchestrator.easyAgentOrchestrator",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "credentials": {
+        "easyAgentOrchestratorApi": {
+          "id": "easy-agent-credentials",
+          "name": "Easy Agent API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeGoal",
+        "goal": "Format the marketing report as a professional document with charts and visualizations",
+        "context": "={{ $json }}",
+        "sessionId": "format-report-{{ new Date().toISOString().slice(0, 10) }}",
+        "useN8nLLM": true,
+        "useN8nMemory": true,
+        "useN8nMCP": false,
+        "additionalOptions": {
+          "maxTasks": 8,
+          "temperature": 0.2,
+          "maxTokens": 4000,
+          "timeout": 300
+        }
+      },
+      "id": "format-report",
+      "name": "Format Report",
+      "type": "n8n-nodes-easy-agent-orchestrator.easyAgentOrchestrator",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "easyAgentOrchestratorApi": {
+          "id": "easy-agent-credentials",
+          "name": "Easy Agent API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "post_wordpress_blog",
+        "title": "={{ $json.results[0].result.title || 'Weekly Marketing Report' }}",
+        "content": "={{ $json.results[0].result.content || $json.results[0].result }}",
+        "sourceKey": "weekly-report-{{ new Date().toISOString().slice(0, 10) }}",
+        "status": "publish"
+      },
+      "id": "post-to-wordpress",
+      "name": "Post to WordPress",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 300],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "wordpress-credentials",
+          "name": "WordPress API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "message",
+        "operation": "post",
+        "chatId": "={{ $vars.MARKETING_CHAT_ID }}",
+        "text": "📊 Weekly Marketing Report Published!\n\n{{ $json.results[0].result.title || 'Weekly Marketing Report' }}\n\nView full report: {{ $json.results[0].result.url || 'Check WordPress' }}",
+        "additionalFields": {}
+      },
+      "id": "notify-telegram",
+      "name": "Notify Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1120, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-credentials",
+          "name": "Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "clearSession",
+        "sessionId": "weekly-report-{{ new Date().toISOString().slice(0, 10) }}"
+      },
+      "id": "cleanup-session",
+      "name": "Cleanup Session",
+      "type": "n8n-nodes-easy-agent-orchestrator.easyAgentOrchestrator",
+      "typeVersion": 1,
+      "position": [1340, 300],
+      "credentials": {
+        "easyAgentOrchestratorApi": {
+          "id": "easy-agent-credentials",
+          "name": "Easy Agent API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Easy Agent Orchestrator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Easy Agent Orchestrator": {
+      "main": [
+        [
+          {
+            "node": "Format Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Report": {
+      "main": [
+        [
+          {
+            "node": "Post to WordPress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to WordPress": {
+      "main": [
+        [
+          {
+            "node": "Notify Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Telegram": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1",
+  "id": "advanced-easy-agent-workflow",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

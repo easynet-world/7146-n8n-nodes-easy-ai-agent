@@ -7,7 +7,7 @@ import { executeGoal } from './src/index.js';
 dotenv.config();
 
 async function runOpenRouterDemo() {
-  console.log('🚀 LangGraph Agent Orchestrator with OpenRouter & DeepSeek Demo\n');
+  console.log('🚀 Easy Agent Orchestrator with OpenRouter & DeepSeek Demo\n');
   console.log('=' .repeat(70));
   
   try {
@@ -149,7 +149,7 @@ async function runOpenRouterDemo() {
     console.log('\n' + '=' .repeat(70));
     console.log('✅ All demos completed successfully!');
     console.log('🤖 DeepSeek AI integration is working perfectly!');
-    console.log('📊 LangGraph Agent Orchestrator is fully functional!');
+    console.log('📊 Easy Agent Orchestrator is fully functional!');
     
   } catch (error) {
     console.error('❌ Demo failed:', error.message);
