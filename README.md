@@ -599,6 +599,20 @@ See `n8n-nodes/examples/workflow-example.json` for a complete example that demon
 - Memory persistence with Redis
 - Web extraction, image search, YouTube analysis, WordPress integration
 
+## GitHub Actions & Automated Publishing
+
+This project includes automated npm publishing using GitHub Actions and semantic-release:
+
+### Features
+- **Automated Versioning**: Uses conventional commits to determine version bumps
+- **NPM Publishing**: Automatically publishes to npm registry on master branch pushes
+- **Changelog Generation**: Automatically updates CHANGELOG.md
+- **GitHub Releases**: Creates GitHub releases with release notes
+- **Quality Gates**: Runs tests and linting before publishing
+
+### Setup
+See [GITHUB_ACTIONS_SETUP.md](GITHUB_ACTIONS_SETUP.md) for detailed setup instructions including required GitHub secrets.
+
 ## License
 
 MIT
